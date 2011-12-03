@@ -30,27 +30,21 @@ freely, subject to the following restrictions:
    distribution.
 */
 
-new WP_CDN_Rewrite();
-
 class WP_CDN_Rewrite {
 	const NAME = 'CDN Rewrite';
 	const SLUG = 'wpcdnrewrite';
-	const REQUIREDCAPABILITY = 'read'; // 'manage_options';
-	
-	public function WP_CDN_Rewrite() {
-		$this->__construct();
-	}
+	const REQUIRED_CAPABILITY = 'read'; // 'manage_options';
 
 	public function __construct() {
-		add_action('admin_init', array($this, 'admin_init'));
+        add_action("admin_menu", array($this, "admin_init"));
 	}
 	
 	public function admin_init() {
-		add_options_page(self::NAME, self::NAME, self::REQUIREDCAPABILITY, self::SLUG, array($this, 'show_config'));
+		add_options_page(self::NAME, self::NAME, self::REQUIRED_CAPABILITY, self::SLUG, array($this, 'show_config'));
 	}
 	
 	public function show_config() {
-		if (!current_user_can(self::REQUIREDCAPABILITY)) {
+		if (!current_user_can(self::REQUIRED_CAPABILITY)) {
 			wp_die(__('You do not have sufficient permissions to access this page.'));
 		}
 		
@@ -62,3 +56,5 @@ class WP_CDN_Rewrite {
 		echo $content;
 	}
 }
+
+new WP_CDN_Rewrite();
