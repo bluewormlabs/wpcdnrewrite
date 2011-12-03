@@ -1,6 +1,6 @@
 <?php
 /*
-Plugin Name: WP CDN Rewrite
+Plugin Name: CDN Rewrite
 Plugin URI: http://github.com/bluewormlabs
 Version: 1.0
 Description: 
@@ -31,7 +31,7 @@ freely, subject to the following restrictions:
 */
 
 class WP_CDN_Rewrite {
-	const NAME = 'WP CDN Rewrite';
+	const NAME = 'CDN Rewrite';
 	const SLUG = 'wpcdnrewrite';
 	const REQUIREDCAPABILITY = 'read'; // 'manage_options';
 	
