@@ -47,18 +47,13 @@ class WP_CDN_Rewrite {
 	}
 	
 	function show_config() {
-		$filename = 'html/error.php';
-		
-		if (current_user_can(self::REQUIREDCAPABILITY)) {
-			$filename = 'html/config.php';
-		}
-		else {
-			$filename = 'html/permission_denied.php';
+		if (!current_user_can(self::REQUIREDCAPABILITY)) {
+			wp_die(__('You do not have sufficient permissions to access this page.'));
 		}
 		
 		$content = '';
 		ob_start();
-		require_once($filename);
+		require_once('html/config.php');
 		$content = ob_get_contents();
 		ob_end_clean();
 		echo $content;
