@@ -4,7 +4,7 @@ Plugin Name: CDN Rewrite
 Plugin URI: http://github.com/bluewormlabs
 Version: 1.0
 Description: 
-Author: Blue Worm Labs, LLC
+Author: Blue Worm Labs
 Author URI: http://bluewormlabs.com
 License: zlib
 
