@@ -1,3 +1,5 @@
-<h2>WP CDN Rewrite</h2>
+<?php require_once('header.inc.php'); ?>
 
 Sorry, an error occurred.
+
+<?php require_once('footer.inc.php'); ?>
