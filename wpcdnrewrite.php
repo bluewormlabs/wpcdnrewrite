@@ -55,6 +55,16 @@ class WP_CDN_Rewrite {
 		ob_end_clean();
 		echo $content;
 	}
+	
+	public function add_rewrite_rules() {
+		// data structure:
+		// 	option name: 'wpcdnrewrite-rules'
+		// 		array(
+		// 			array('type' => REWRITE_TYPE_HOST_ONLY | REWRITE_TYPE_FULL_URL,
+		// 				  'match' => 'jpg',
+		// 				  'rule' => 'http://cdn.myhost.com/images/jpeg/'),
+		// 		)
+	}
 }
 
 new WP_CDN_Rewrite();
