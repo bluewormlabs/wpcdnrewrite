@@ -34,8 +34,8 @@ class WP_CDN_Rewrite {
 	const NAME = 'CDN Rewrite'; // displayed name
 	const SLUG = 'wpcdnrewrite'; // slug for the options page
 	const REQUIRED_CAPABILITY = 'manage_options'; // capability required to edit configuration
-	const VERSIONKEY = 'wpcdnrewrite-version'; // WP options key for our version
-	const RULESKEY = 'wpcdnrewrite-rules'; // WP options key for rules
+	const VERSION_KEY = 'wpcdnrewrite-version'; // WP options key for our version
+	const RULES_KEY = 'wpcdnrewrite-rules'; // WP options key for rules
 
 	public function __construct() {
         add_action('admin_menu', array($this, 'admin_init'));
