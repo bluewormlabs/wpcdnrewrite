@@ -47,13 +47,8 @@ class WP_CDN_Rewrite {
 		if (!current_user_can(self::REQUIRED_CAPABILITY)) {
 			wp_die(__('You do not have sufficient permissions to access this page.'));
 		}
-		
-		$content = '';
-		ob_start();
+
 		require_once('html/config.php');
-		$content = ob_get_contents();
-		ob_end_clean();
-		echo $content;
 	}
 }
 
