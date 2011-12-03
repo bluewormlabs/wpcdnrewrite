@@ -34,14 +34,21 @@ class WP_CDN_Rewrite {
 	const NAME = 'CDN Rewrite';
 	const SLUG = 'wpcdnrewrite';
 	const REQUIRED_CAPABILITY = 'manage_options';
+    const VERSION = '1.0';
 
 	public function __construct() {
         add_action('admin_menu', array($this, 'admin_init'));
+        register_activation_hook(__FILE__, array($this, 'install'));
 	}
 	
 	public function admin_init() {
 		add_options_page(self::NAME, self::NAME, self::REQUIRED_CAPABILITY, self::SLUG, array($this, 'show_config'));
 	}
+
+    public function install() {
+        add_option('wpcdnrewrite-version', self::VERSION);
+        add_option('wpcdnrewrite-rules', array());
+    }
 	
 	public function show_config() {
 		if (!current_user_can(self::REQUIRED_CAPABILITY)) {
