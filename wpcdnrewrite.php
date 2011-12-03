@@ -8,7 +8,6 @@ Author: Blue Worm Labs, LLC
 Author URI: http://bluewormlabs.com
 License: zlib
 */
-
 /*
 Copyright (c) 2011 Blue Worm Labs, LLC
 
@@ -32,6 +31,19 @@ freely, subject to the following restrictions:
    distribution.
 */
 
+function wpcdnrewrite_add_admin_menu() {
+	$title = 'WP CDN Rewrite';
+	$slug = 'wpcdnrewrite';
+	
+	add_options_page($title, $title, 'manage_options', $slug, 'wpcdnrewrite_admin_menu');
+}
 
+function wpcdnrewrite_admin_menu() {
+?>
+<!-- TODO: Add the admin page -->
+<?
+}
+
+add_action('admin_menu', 'wpcdnrewrite_add_admin_menu');
 
 ?>
