@@ -36,7 +36,7 @@ class WP_CDN_Rewrite {
 	const REQUIRED_CAPABILITY = 'read'; // 'manage_options';
 
 	public function __construct() {
-        add_action("admin_menu", array($this, "admin_init"));
+        add_action('admin_menu', array($this, 'admin_init'));
 	}
 	
 	public function admin_init() {
