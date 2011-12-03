@@ -47,7 +47,7 @@ class WP_CDN_Rewrite {
         }
 
         register_activation_hook(__FILE__, array($this, 'activate'));
-        register_uninstall_hook(__FILE__, array($this, 'uninstall'));
+        register_uninstall_hook(__FILE__, array('WP_CDN_Rewrite', 'uninstall'));
         
         // Add filters to run our rewrite code on
         add_filter('the_content', array(&$this, 'rewrite_the_content'), 20);
