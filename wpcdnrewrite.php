@@ -30,6 +30,8 @@ freely, subject to the following restrictions:
    distribution.
 */
 
+new WP_CDN_Rewrite();
+
 class WP_CDN_Rewrite {
 	const NAME = 'CDN Rewrite';
 	const SLUG = 'wpcdnrewrite';
@@ -60,5 +62,3 @@ class WP_CDN_Rewrite {
 		echo $content;
 	}
 }
-
-new WP_CDN_Rewrite();
