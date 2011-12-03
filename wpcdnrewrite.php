@@ -40,16 +40,23 @@ class WP_CDN_Rewrite {
 
 	public function __construct() {
         add_action('admin_menu', array($this, 'admin_init'));
-        register_activation_hook(__FILE__, array($this, 'install'));
+        register_activation_hook(__FILE__, array($this, 'activate'));
+        register_uninstall_hook(__FILE__, array($this, 'uninstall'));
 	}
 	
 	public function admin_init() {
 		add_options_page(self::NAME, self::NAME, self::REQUIRED_CAPABILITY, self::SLUG, array($this, 'show_config'));
 	}
 
-    public function install() {
-        add_option('wpcdnrewrite-version', self::VERSION);
-        add_option('wpcdnrewrite-rules', array());
+    /**
+     * adds the necessary wordpress options for the plugin to use later. Only runs on activation
+     *
+     * @return void
+     */
+    public function activate() {
+        //add_option only runs if the option doesn't exist
+        add_option(self::VERSION_KEY, self::VERSION);
+        add_option(self::RULES_KEY, array());
     }
 	
 	public function show_config() {
@@ -70,6 +77,16 @@ class WP_CDN_Rewrite {
 		// 				  'rule' => 'http://cdn.myhost.com/images/jpeg/'),
 		// 		)
 	}
+
+    /**
+     * Deletes all of the stuff we put into the database so that we don't leave anything behind to corrupt future installs
+     *
+     * @return void
+     */
+    public function uninstall() {
+        delete_option(self::VERSION_KEY);
+        delete_option(self::RULES_KEY);
+    }
 }
 
 new WP_CDN_Rewrite();
