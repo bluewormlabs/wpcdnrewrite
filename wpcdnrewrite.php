@@ -33,7 +33,7 @@ freely, subject to the following restrictions:
 class WP_CDN_Rewrite {
 	const NAME = 'CDN Rewrite';
 	const SLUG = 'wpcdnrewrite';
-	const REQUIRED_CAPABILITY = 'read'; // 'manage_options';
+	const REQUIRED_CAPABILITY = 'manage_options';
 
 	public function __construct() {
         add_action('admin_menu', array($this, 'admin_init'));
