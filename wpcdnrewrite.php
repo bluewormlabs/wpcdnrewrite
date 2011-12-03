@@ -90,7 +90,7 @@ class WP_CDN_Rewrite {
      *
      * @return void
      */
-    public function uninstall() {
+    public static function uninstall() {
         delete_option(self::VERSION_KEY);
         delete_option(self::RULES_KEY);
     }
