@@ -31,8 +31,9 @@ freely, subject to the following restrictions:
 */
 
 class WP_CDN_Rewrite {
-	public static $title = 'WP CDN Rewrite';
-	public static $slug = 'wp-cdn-rewrite';
+	const NAME = 'WP CDN Rewrite';
+	const SLUG = 'wpcdnrewrite';
+	const REQUIREDCAPABILITY = 'read'; // 'manage_options';
 	
 	function WP_CDN_Rewrite() {
 		$this->__construct();
@@ -42,17 +43,26 @@ class WP_CDN_Rewrite {
 	}
 	
 	function admin_init() {
-		// manage_options
-		add_options_page(self::$title, self::$title, 'read', self::$slug, array($this, 'show_config'));
+		add_options_page(self::NAME, self::NAME, self::REQUIREDCAPABILITY, self::SLUG, array($this, 'show_config'));
 	}
 	
 	function show_config() {
+		$filename = 'html/error.php';
+		
+		if (current_user_can(self::REQUIREDCAPABILITY)) {
+			$filename = 'html/config.php';
+		}
+		else {
+			$filename = 'html/permission_denied.php';
+		}
+		
 		$content = '';
 		ob_start();
-		require_once('html/config.php');
+		require_once($filename);
 		$content = ob_get_contents();
 		ob_end_clean();
 		echo $content;
+
 	}
 }
 
