@@ -12,7 +12,7 @@ Installation
 + [WordPress][2] 2.8+
 
 ### Install
-Place the `wpcdnrewrite.php` file under `wp-content/plugins` on your 
+Extract `wpcdnrewrite` into the `wp-content/plugins` directory on your 
 WordPress install. Then go to Plugins > Installed Plugins from the 
 WordPress admin site and click _Activate_ below _WP CDN Rewrite_.
 
