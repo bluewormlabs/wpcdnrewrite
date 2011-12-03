@@ -40,13 +40,27 @@ class WP_CDN_Rewrite {
 	const WHITELIST_KEY = 'wpcdnrewrite-whitelist'; // WP options key for domains to rewrite URLs for
 
 	public function __construct() {
-        add_action('admin_menu', array($this, 'admin_menu'));
+        //only register the admin call backs if we're in the admin
+        if(is_admin()) {
+            add_action('admin_menu', array($this, 'admin_menu'));
+            add_action('admin_init', array($this, 'admin_init'));
+        }
+
         register_activation_hook(__FILE__, array($this, 'activate'));
         register_uninstall_hook(__FILE__, array($this, 'uninstall'));
         
         // Add filters to run our rewrite code on
         add_filter('the_content', array(&$this, 'rewrite_the_content'), 20);
 	}
+
+    /**
+     * The admin_init hook runs as soon as the admin initializes and we use it
+     * to add our settings to the whitelist of allowed options
+     */
+    public function admin_init() {
+        register_setting('wpcdnrewrite', self::VERSION_KEY);
+        register_setting('wpcdnrewrite', self::RULES_KEY);
+    }
 	
 	public function admin_menu() {
 		add_options_page(self::NAME, self::NAME, self::REQUIRED_CAPABILITY, self::SLUG, array($this, 'show_config'));
@@ -61,6 +75,7 @@ class WP_CDN_Rewrite {
         //add_option only runs if the option doesn't exist
         add_option(self::VERSION_KEY, self::VERSION);
         add_option(self::RULES_KEY, array());
+        add_option(self::WHITELIST_KEY, network_site_url());
     }
 	
 	public function show_config() {
@@ -92,9 +107,10 @@ class WP_CDN_Rewrite {
      *
      * @return void
      */
-    public function uninstall() {
+    public static function uninstall() {
         delete_option(self::VERSION_KEY);
         delete_option(self::RULES_KEY);
+        delete_option(self::WHITELIST_KEY);
     }
 }
 
