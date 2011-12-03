@@ -43,6 +43,9 @@ class WP_CDN_Rewrite {
         add_action('admin_menu', array($this, 'admin_menu'));
         register_activation_hook(__FILE__, array($this, 'activate'));
         register_uninstall_hook(__FILE__, array($this, 'uninstall'));
+        
+        // Add filters to run our rewrite code on
+        add_filter('the_content', array(&$this, 'rewrite_the_content'), 20);
 	}
 	
 	public function admin_menu() {
@@ -68,7 +71,20 @@ class WP_CDN_Rewrite {
 		require_once('html/config.php');
 	}
 	
-	public function add_rewrite_rules() {
+	public function rewrite_the_content($content) {
+		$version = get_option(self::VERSION_KEY);
+		
+		if (strcmp($version, '1.0')) {
+			// array(
+			// 	array('type' => REWRITE_TYPE_HOST_ONLY | REWRITE_TYPE_FULL_URL,
+			// 		  'match' => 'jpg',
+			// 		  'rule' => 'http://cdn.myhost.com/images/jpeg/'),
+			// )
+			$rules = get_option(self::RULES_KEY);
+			$whitelist = get_option(self::WHITELIST_KEY);
+		}
+		
+		return $content;
 	}
 
     /**
