@@ -36,6 +36,7 @@ class WP_CDN_Rewrite {
 	const REQUIRED_CAPABILITY = 'manage_options'; // capability required to edit configuration
 	const VERSION_KEY = 'wpcdnrewrite-version'; // WP options key for our version
 	const RULES_KEY = 'wpcdnrewrite-rules'; // WP options key for rules
+	const WHITELIST_KEY = 'wpcdnrewrite-whitelist'; // WP options key for domains to rewrite URLs for
 
 	public function __construct() {
         add_action('admin_menu', array($this, 'admin_init'));
@@ -54,14 +55,6 @@ class WP_CDN_Rewrite {
 	}
 	
 	public function add_rewrite_rules() {
-		// option name: 'wpcdnrewrite-version"
-		// 		'1.0'
-		// option name: 'wpcdnrewrite-rules'
-		// 		array(
-		// 			array('type' => REWRITE_TYPE_HOST_ONLY | REWRITE_TYPE_FULL_URL,
-		// 				  'match' => 'jpg',
-		// 				  'rule' => 'http://cdn.myhost.com/images/jpeg/'),
-		// 		)
 	}
 }
 
