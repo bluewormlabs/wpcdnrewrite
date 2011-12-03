@@ -31,20 +31,34 @@ freely, subject to the following restrictions:
 */
 
 class WP_CDN_Rewrite {
-	const NAME = 'CDN Rewrite'; // displayed name
-	const SLUG = 'wpcdnrewrite'; // slug for the options page
-	const REQUIRED_CAPABILITY = 'manage_options'; // capability required to edit configuration
+	const NAME = 'CDN Rewrite';
+	const SLUG = 'wpcdnrewrite';
+	const REQUIRED_CAPABILITY = 'manage_options';
+    const VERSION = '1.0';
 	const VERSION_KEY = 'wpcdnrewrite-version'; // WP options key for our version
 	const RULES_KEY = 'wpcdnrewrite-rules'; // WP options key for rules
 	const WHITELIST_KEY = 'wpcdnrewrite-whitelist'; // WP options key for domains to rewrite URLs for
 
 	public function __construct() {
-        add_action('admin_menu', array($this, 'admin_init'));
+        add_action('admin_menu', array($this, 'admin_menu'));
+        register_activation_hook(__FILE__, array($this, 'activate'));
+        register_uninstall_hook(__FILE__, array($this, 'uninstall'));
 	}
 	
-	public function admin_init() {
+	public function admin_menu() {
 		add_options_page(self::NAME, self::NAME, self::REQUIRED_CAPABILITY, self::SLUG, array($this, 'show_config'));
 	}
+
+    /**
+     * adds the necessary wordpress options for the plugin to use later. Only runs on activation
+     *
+     * @return void
+     */
+    public function activate() {
+        //add_option only runs if the option doesn't exist
+        add_option(self::VERSION_KEY, self::VERSION);
+        add_option(self::RULES_KEY, array());
+    }
 	
 	public function show_config() {
 		if (!current_user_can(self::REQUIRED_CAPABILITY)) {
@@ -56,6 +70,16 @@ class WP_CDN_Rewrite {
 	
 	public function add_rewrite_rules() {
 	}
+
+    /**
+     * Deletes all of the stuff we put into the database so that we don't leave anything behind to corrupt future installs
+     *
+     * @return void
+     */
+    public function uninstall() {
+        delete_option(self::VERSION_KEY);
+        delete_option(self::RULES_KEY);
+    }
 }
 
 new WP_CDN_Rewrite();
