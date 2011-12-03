@@ -39,10 +39,24 @@ class WP_CDN_Rewrite {
 	const RULES_KEY = 'wpcdnrewrite-rules'; // WP options key for rules
 
 	public function __construct() {
-        add_action('admin_menu', array($this, 'admin_menu'));
+        //only register the admin call backs if we're in the admin
+        if(is_admin()) {
+            add_action('admin_menu', array($this, 'admin_menu'));
+            add_action('admin_init', array($this, 'admin_init'));
+        }
+
         register_activation_hook(__FILE__, array($this, 'activate'));
         register_uninstall_hook(__FILE__, array($this, 'uninstall'));
 	}
+
+    /**
+     * The admin_init hook runs as soon as the admin initializes and we use it
+     * to add our settings to the whitelist of allowed options
+     */
+    public function admin_init() {
+        register_setting('wpcdnrewrite', self::VERSION_KEY);
+        register_setting('wpcdnrewrite', self::RULES_KEY);
+    }
 	
 	public function admin_menu() {
 		add_options_page(self::NAME, self::NAME, self::REQUIRED_CAPABILITY, self::SLUG, array($this, 'show_config'));
