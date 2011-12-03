@@ -39,12 +39,12 @@ class WP_CDN_Rewrite {
 	const RULES_KEY = 'wpcdnrewrite-rules'; // WP options key for rules
 
 	public function __construct() {
-        add_action('admin_menu', array($this, 'admin_init'));
+        add_action('admin_menu', array($this, 'admin_menu'));
         register_activation_hook(__FILE__, array($this, 'activate'));
         register_uninstall_hook(__FILE__, array($this, 'uninstall'));
 	}
 	
-	public function admin_init() {
+	public function admin_menu() {
 		add_options_page(self::NAME, self::NAME, self::REQUIRED_CAPABILITY, self::SLUG, array($this, 'show_config'));
 	}
 
