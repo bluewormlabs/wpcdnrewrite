@@ -72,6 +72,7 @@ class WP_CDN_Rewrite {
         //add_option only runs if the option doesn't exist
         add_option(self::VERSION_KEY, self::VERSION);
         add_option(self::RULES_KEY, array());
+        add_option(self::WHITELIST_KEY, network_site_url());
     }
 	
 	public function show_config() {
@@ -93,6 +94,7 @@ class WP_CDN_Rewrite {
     public static function uninstall() {
         delete_option(self::VERSION_KEY);
         delete_option(self::RULES_KEY);
+        delete_option(self::WHITELIST_KEY);
     }
 }
 
