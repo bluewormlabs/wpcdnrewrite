@@ -33,10 +33,10 @@ freely, subject to the following restrictions:
 class WP_CDN_Rewrite {
 	const NAME = 'CDN Rewrite';
 	const SLUG = 'wpcdnrewrite';
-	const REQUIRED_CAPABILITY = 'read'; // 'manage_options';
+	const REQUIRED_CAPABILITY = 'manage_options';
 
 	public function __construct() {
-        add_action("admin_menu", array($this, "admin_init"));
+        add_action('admin_menu', array($this, 'admin_init'));
 	}
 	
 	public function admin_init() {
@@ -49,6 +49,16 @@ class WP_CDN_Rewrite {
 		}
 
 		require_once('html/config.php');
+	}
+	
+	public function add_rewrite_rules() {
+		// data structure:
+		// 	option name: 'wpcdnrewrite-rules'
+		// 		array(
+		// 			array('type' => REWRITE_TYPE_HOST_ONLY | REWRITE_TYPE_FULL_URL,
+		// 				  'match' => 'jpg',
+		// 				  'rule' => 'http://cdn.myhost.com/images/jpeg/'),
+		// 		)
 	}
 }
 
