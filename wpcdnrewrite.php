@@ -52,8 +52,9 @@ class WP_CDN_Rewrite {
 	}
 	
 	public function add_rewrite_rules() {
-		// data structure:
-		// 	option name: 'wpcdnrewrite-rules'
+		// option name: 'wpcdnrewrite-version"
+		// 		'1.0'
+		// option name: 'wpcdnrewrite-rules'
 		// 		array(
 		// 			array('type' => REWRITE_TYPE_HOST_ONLY | REWRITE_TYPE_FULL_URL,
 		// 				  'match' => 'jpg',
