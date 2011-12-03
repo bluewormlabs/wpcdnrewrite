@@ -35,18 +35,19 @@ class WP_CDN_Rewrite {
 	const SLUG = 'wpcdnrewrite';
 	const REQUIREDCAPABILITY = 'read'; // 'manage_options';
 	
-	function WP_CDN_Rewrite() {
+	public function WP_CDN_Rewrite() {
 		$this->__construct();
 	}
-	function __construct() {
+
+	public function __construct() {
 		add_action('admin_init', array($this, 'admin_init'));
 	}
 	
-	function admin_init() {
+	public function admin_init() {
 		add_options_page(self::NAME, self::NAME, self::REQUIREDCAPABILITY, self::SLUG, array($this, 'show_config'));
 	}
 	
-	function show_config() {
+	public function show_config() {
 		if (!current_user_can(self::REQUIREDCAPABILITY)) {
 			wp_die(__('You do not have sufficient permissions to access this page.'));
 		}
@@ -61,5 +62,3 @@ class WP_CDN_Rewrite {
 }
 
 new WP_CDN_Rewrite();
-
-?>
