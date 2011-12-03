@@ -3,7 +3,7 @@
 Plugin Name: CDN Rewrite
 Plugin URI: http://github.com/bluewormlabs
 Version: 1.0
-Description: 
+Description: Rewrites URLs to files matching user-specified rules. This allows, for example, static content (e.g., images) to be loaded from a CDN instead of the server running the WordPress install.
 Author: Blue Worm Labs
 Author URI: http://bluewormlabs.com
 License: zlib
