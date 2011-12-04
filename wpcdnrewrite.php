@@ -54,7 +54,11 @@ class WP_CDN_Rewrite {
         register_uninstall_hook(__FILE__, array('WP_CDN_Rewrite', 'uninstall'));
         
         // Add filters to run our rewrite code on
-        add_filter('the_content', array($this, 'rewrite_the_content'), 20);
+        add_filter('the_content', array($this, 'rewrite_content'), 20);
+        add_filter('the_content_rss', array($this, 'rewrite_content'), 20);
+        add_filter('the_content_feed', array($this, 'rewrite_content'), 20);
+        add_filter('the_excerpt', array($this, 'rewrite_content'), 20);
+        add_filter('the_excerpt_rss', array($this, 'rewrite_content'), 20);
 	}
 
     /**
@@ -105,12 +109,12 @@ class WP_CDN_Rewrite {
 	}
 	
 	/**
-     * Rewrites output of the_content() per specified rules
+     * Rewrites the specified content per specified rules
      *
      * @param string  $content The text to rewrite
      * @return string The new content with appropriate URLs rewritten
      */
-    public function rewrite_the_content($content) {
+    public function rewrite_content($content) {
 		// Grab the version number we're working with
 		$version = get_option(self::VERSION_KEY);
 		
