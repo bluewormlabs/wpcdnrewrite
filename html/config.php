@@ -1,9 +1,9 @@
 <?php require_once('header.inc.php'); ?>
 
-<form id="wpcdnrewrite-config-form" method="post" action="<?php echo wp_nonce_url('options-general.php?page=' . WP_CDN_Rewrite::SLUG); ?>">
+<form id="wpcdnrewrite-config-form" method="post" action="options.php">
     <table id="whitelistTable">
         <tr>
-            <td colspan="2"><h3>Domains to do rewriting for</h3></td>
+            <td colspan="3"><h3>Domains to do rewriting for</h3></td>
         </tr>
 <?php
         $domainArray = get_option(WP_CDN_Rewrite::WHITELIST_KEY);
@@ -12,19 +12,19 @@
         if(count($domainArray) > 0) {
             foreach($domainArray as $domain) {
 ?>
-                <tr style="padding: 5px;" id="domain<?php echo $count;?>">
+                <tr id="domain<?php echo $count;?>">
                     <td>
-                        <input id="whitelist<?php echo $count;?>" name="<?php echo WP_CDN_Rewrite::WHITELIST_KEY;?>[]" type="text" value="<?php echo $domain ?>"/>
+                        <input name="<?php echo WP_CDN_Rewrite::WHITELIST_KEY;?>[]" type="text" value="<?php echo $domain ?>"/>
                     </td>
+                    <td>
 <?php
                         if($count !== 0) {
 ?>
-                            <td>
-                                <input type="button" class="button-primary" id="removeDomain<?php echo $count;?>" value="-" />
-                            </td>
+                            <input type="button" class="button-primary" id="removeDomain<?php echo $count;?>" value="-" onClick="removeRow(this);" />
                     <?php
                         }
 ?>
+                    </td>
                 </tr>
 <?php
                 $count++;
