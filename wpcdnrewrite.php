@@ -66,7 +66,10 @@ class WP_CDN_Rewrite {
         register_setting('wpcdnrewrite', self::WHITELIST_KEY);
     }
 	
-	public function admin_menu() {
+	/**
+     * Adds a link to our settings page under the Settings menu
+     */
+    public function admin_menu() {
 		add_options_page(self::NAME, self::NAME, self::REQUIRED_CAPABILITY, self::SLUG, array($this, 'show_config'));
 	}
 
@@ -83,11 +86,17 @@ class WP_CDN_Rewrite {
         add_option(self::WHITELIST_KEY, array($host));
     }
 
+    /**
+     * Adds admin.js to the <head>
+     */
     public function include_admin_javascript() {
         wp_enqueue_script('admin.js', plugins_url('html/admin.js', __FILE__), array('jquery'));
     }
 	
-	public function show_config() {
+	/**
+     * Shows the configuration page within the settings
+     */
+    public function show_config() {
 		if (!current_user_can(self::REQUIRED_CAPABILITY)) {
 			wp_die(__('You do not have sufficient permissions to access this page.'));
 		}
@@ -95,7 +104,13 @@ class WP_CDN_Rewrite {
 		require_once('html/config.php');
 	}
 	
-	public function rewrite_the_content($content) {
+	/**
+     * Rewrites output of the_content() per specified rules
+     *
+     * @param string  $content The text to rewrite
+     * @return string The new content with appropriate URLs rewritten
+     */
+    public function rewrite_the_content($content) {
 		// Grab the version number we're working with
 		$version = get_option(self::VERSION_KEY);
 		
@@ -157,6 +172,15 @@ class WP_CDN_Rewrite {
         delete_option(self::WHITELIST_KEY);
     }
     
+    /**
+     * Does the actual URL rewriting for a given DOMDocument object
+     *
+     * @param DOMDocument $dom       The DOM to rewrite URLs in
+     * @param array       $rules     Rewrite rules
+     * @param array       $whitelist Array of server names to rewrite links for
+     * @param string      $tag       The tag type to rewrite for
+     * @param string      $attribute The attribute to rewrite for on the specified tag
+     */
     protected function do_rewrite($dom, $rules=array(), $whitelist=array(), $tag='a', $attribute='href') {
     	// Make sure we got a valid DOM
     	if (NULL == $dom) {
