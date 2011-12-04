@@ -44,13 +44,14 @@ class WP_CDN_Rewrite {
         if(is_admin()) {
             add_action('admin_menu', array($this, 'admin_menu'));
             add_action('admin_init', array($this, 'admin_init'));
+            add_action('admin_enqueue_scripts', array($this, 'include_admin_javascript'));
         }
 
         register_activation_hook(__FILE__, array($this, 'activate'));
         register_uninstall_hook(__FILE__, array('WP_CDN_Rewrite', 'uninstall'));
         
         // Add filters to run our rewrite code on
-        add_filter('the_content', array(&$this, 'rewrite_the_content'), 20);
+        add_filter('the_content', array($this, 'rewrite_the_content'), 20);
 	}
 
     /**
@@ -58,8 +59,8 @@ class WP_CDN_Rewrite {
      * to add our settings to the whitelist of allowed options
      */
     public function admin_init() {
-        register_setting('wpcdnrewrite', self::VERSION_KEY);
         register_setting('wpcdnrewrite', self::RULES_KEY);
+        register_setting('wpcdnrewrite', self::WHITELIST_KEY);
     }
 	
 	public function admin_menu() {
@@ -72,10 +73,15 @@ class WP_CDN_Rewrite {
      * @return void
      */
     public function activate() {
+        $host = parse_url(network_site_url(), PHP_URL_HOST);
         //add_option only runs if the option doesn't exist
         add_option(self::VERSION_KEY, self::VERSION);
         add_option(self::RULES_KEY, array());
-        add_option(self::WHITELIST_KEY, network_site_url());
+        add_option(self::WHITELIST_KEY, array($host));
+    }
+
+    public function include_admin_javascript() {
+        wp_enqueue_script('admin.js', plugins_url('html/admin.js', __FILE__), array('jquery'));
     }
 	
 	public function show_config() {
