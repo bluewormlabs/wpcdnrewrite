@@ -38,6 +38,9 @@ class WP_CDN_Rewrite {
 	const VERSION_KEY = 'wpcdnrewrite-version'; // WP options key for our version
 	const RULES_KEY = 'wpcdnrewrite-rules'; // WP options key for rules
 	const WHITELIST_KEY = 'wpcdnrewrite-whitelist'; // WP options key for domains to rewrite URLs for
+	const REWRITE_TYPE_HOST_ONLY = 1; // rewrite only the host portion of the url
+	const REWRITE_TYPE_FULL_URL = 2; // rewrite the full URL up to the file
+	const WPCDNDEBUG = FALSE;
 
 	public function __construct() {
         //only register the admin call backs if we're in the admin
@@ -93,42 +96,51 @@ class WP_CDN_Rewrite {
 	}
 	
 	public function rewrite_the_content($content) {
+		// Grab the version number we're working with
 		$version = get_option(self::VERSION_KEY);
 		
 		if (strcmp($version, '1.0') == 0) {
-			// $rules = array(
-			// 		array('type' => REWRITE_TYPE_HOST_ONLY | REWRITE_TYPE_FULL_URL,
-			// 			  'match' => 'jpg',
-			// 			  'rule' => 'http://cdn.myhost.com/images/jpeg/'),
-			// 		// ...
-			// );
+			// Pull the rules and whitelist arrays from the database
 			$rules = get_option(self::RULES_KEY);
 			$whitelist = get_option(self::WHITELIST_KEY);
+			
+			// If debug mode is on, hard-code some rules and whitelist
+			if (self::WPCDNDEBUG) {
+				$rules = array(
+					array(
+						'type' => self::REWRITE_TYPE_FULL_URL,
+						'match' => 'png',
+						'rule' => 'http://cdn.wpdev.local/images'
+					),
+					array(
+						'type' => self::REWRITE_TYPE_HOST_ONLY,
+						'match' => 'jpg',
+						'rule' => 'l1.yimg.com'
+					)
+				);
+				
+				$whitelist = array(parse_url(network_site_url(), PHP_URL_HOST), 'yahoo.com');
+			}
 			
 			// Get a DOM object for this content that we can manipulate
 			$dom = new DOMDocument();
 			$dom->loadHTML($content);
 			$dom->formatOutput = true;
 			
-			$anchors = $dom->getElementsByTagName('a');
-			if (!is_null($anchors)) {
-				foreach ($anchors as $anchor) {
-					if ($anchor->hasAttribute('href')) {
-						//$anchor->setAttribute('href', 'HAHA');
-					}
-				}
-			}
+			// Rewrite URLs
+			$this->do_rewrite(&$dom, $rules, $whitelist, 'a', 'href');
+			$this->do_rewrite(&$dom, $rules, $whitelist, 'img', 'src');
 			
-			$images = $dom->getElementsByTagName('img');
-			if (!is_null($images)) {
-				foreach ($images as $image) {
-					if ($image->hasAttribute('src')) {
-						//$image->setAttribute('src', 'HAHA');
-					}
-				}
-			}
+			// Grab the modified HTML
+			$newContent = $dom->saveXML();
 			
-			return $dom->saveXML();
+			// Strip off the extra stuff it added
+			$openBody = strpos($newContent, '<body>');
+			$newContent = substr($newContent, $openBody + 6);
+			$closeBody = strpos($newContent, '</body>');
+			$newContent = substr($newContent, 0, $closeBody);
+			
+			return $newContent;
 		}
 		
 		return $content;
@@ -144,6 +156,100 @@ class WP_CDN_Rewrite {
         delete_option(self::RULES_KEY);
         delete_option(self::WHITELIST_KEY);
     }
+    
+    protected function do_rewrite($dom, $rules=array(), $whitelist=array(), $tag='a', $attribute='href') {
+    	// Make sure we got a valid DOM
+    	if (NULL == $dom) {
+    		wp_die('Invalid DOM passed to WP CDN Rewrite\'s do_rewrite()');
+    	}
+    	
+    	// Go through all of the tags of the type specified…
+    	$tags = $dom->getElementsByTagName($tag);
+		if (!is_null($tags)) {
+			foreach ($tags as $tag) {
+				// …and look for ones that have the requested attribute
+				if ($tag->hasAttribute($attribute)) {
+					$url = $tag->getAttribute($attribute);
+					$parsed = parse_url($url);
+					
+					if (FALSE !== $parsed) {
+						$host = $parsed['host'];
+						if (in_array($host, $whitelist)) {
+							// The target is on a whitelisted domain, so
+							// we want to rewrite the url
+							
+							$matchedRule = NULL;
+							foreach ($rules as $rule) {
+								$path = $parsed['path'];
+								
+								if ($this->endswith($path, $rule['match'])) {
+									// Found a rule to rewrite for
+									$matchedRule = $rule;
+									break;
+								}
+							}
+							
+							if (NULL != $matchedRule) {
+								if (self::REWRITE_TYPE_HOST_ONLY == $matchedRule['type']) {
+									// Find the stuff to the left and right of the host
+									$oldHostLen = strlen($host);
+									$leftLen = strpos($url, $host); // strlen($parsed['scheme']);
+									$rightLen = strlen($url) - ($leftLen + $oldHostLen);
+									
+									$left = substr($url, 0, $leftLen);
+									$right = substr($url, $leftLen + $oldHostLen);
+									
+									// Build a new URL with our replacement host
+									$url = $left . $matchedRule['rule'] . $right;
+									
+								}
+								else if (self::REWRITE_TYPE_FULL_URL == $matchedRule['type']) {
+									$filename = pathinfo($parsed['path'], PATHINFO_BASENAME);
+									$url = $matchedRule['rule'];
+									
+									// Make sure we have a / on the end
+									if (!$this->endswith($url, '/')) {
+										$url = $url . '/';
+									}
+									
+									$url = $url . $filename;
+								}
+								else {
+									// Unknown type, don't do anything
+								}
+								
+								$tag->setAttribute($attribute, $url);
+							}
+						}
+					}
+				}
+			}
+		}
+    }
+    
+    /**
+	 * Tests whether a text starts with the given string or not
+	 *
+	 * @param   string the text to search
+	 * @param   string the string to look for
+	 * @return  bool true if the text starts with the given string, else false
+	 */
+	protected function startswith($haystack, $needle) {
+    	$needleLen = strlen($needle);
+    	return substr($haystack, 0, $needleLen) === $needle;
+    }
+    
+    /**
+	 * Tests whether a text ends with the given string or not
+	 *
+	 * @param   string the text to search
+	 * @param   string the string to look for
+	 * @return  bool true if the text ends with the given string, else false
+	 * @source  http://www.jonasjohn.de/snippets/php/ends-with.htm
+	 */
+	protected function endswith($haystack, $needle){
+	    return strrpos($haystack, $needle) === strlen($haystack) - strlen($needle);
+	}
 }
 
 new WP_CDN_Rewrite();
