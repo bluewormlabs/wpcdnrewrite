@@ -90,7 +90,7 @@ class WP_CDN_Rewrite {
      */
     public function admin_init() {
         register_setting('wpcdnrewrite', self::RULES_KEY);
-        register_setting('wpcdnrewrite', self::WHITELIST_KEY);
+        register_setting('wpcdnrewrite', self::WHITELIST_KEY, array($this, 'sanitize_whitelist'));
     }
 	
 	/**
@@ -308,7 +308,35 @@ class WP_CDN_Rewrite {
 		
 		return $ret;
     }
-    
+
+    /**
+     * Sanitize the array of domains
+     *
+     * @param array $valueArray
+     * @return array
+     */
+    public function sanitize_whitelist(array $valueArray) {
+        foreach($valueArray as $key => $value) {
+            $value = trim($value);
+
+            if($value == '') {
+                unset($valueArray[$key]);
+            } else {
+                //strip http, https, and ://
+                $value = preg_replace("/[http|https]:\/\//", "", $value);
+
+                $validDomain = self::validateDomainName($value);
+                if(false == $validDomain) {
+                    add_settings_error(self::WHITELIST_KEY, self::WHITELIST_KEY, "Invalid domain name \"{$value}\" entered");
+                } else {
+                    $valueArray[$key] = $value;
+                }
+            }
+        }
+
+        return $valueArray;
+    }
+
     /**
 	 * Tests whether a text starts with the given string or not
 	 *
@@ -332,6 +360,23 @@ class WP_CDN_Rewrite {
 	protected function endswith($haystack, $needle){
 	    return strrpos($haystack, $needle) === strlen($haystack) - strlen($needle);
 	}
+
+
+    /**
+     * Used to check and see if the domains that are posted are valid
+     *
+     * @param $domainName
+     * @return bool
+     */
+    protected function validateDomainName($domainName) {
+        $pieces = explode(".", $domainName);
+        foreach($pieces as $piece) {
+            if (!preg_match('/^[a-z\d][a-z\d-]{0,62}$/i', $piece) || preg_match('/-$/', $piece)) {
+                return false;
+            }
+        }
+        return true;
+    }
 }
 
 function wpcdn_rewrite_content($content) {
