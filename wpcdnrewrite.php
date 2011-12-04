@@ -40,7 +40,7 @@ class WP_CDN_Rewrite {
 	const WHITELIST_KEY = 'wpcdnrewrite-whitelist'; // WP options key for domains to rewrite URLs for
 	const REWRITE_TYPE_HOST_ONLY = 1; // rewrite only the host portion of the url
 	const REWRITE_TYPE_FULL_URL = 2; // rewrite the full URL up to the file
-	const WPCDNDEBUG = FALSE;
+	const WPCDNDEBUG = TRUE;
 
 	public function __construct() {
         //only register the admin call backs if we're in the admin
@@ -213,42 +213,56 @@ class WP_CDN_Rewrite {
 								}
 							}
 							
-							if (NULL != $matchedRule) {
-								if (self::REWRITE_TYPE_HOST_ONLY == $matchedRule['type']) {
-									// Find the stuff to the left and right of the host
-									$oldHostLen = strlen($host);
-									$leftLen = strpos($url, $host); // strlen($parsed['scheme']);
-									$rightLen = strlen($url) - ($leftLen + $oldHostLen);
-									
-									$left = substr($url, 0, $leftLen);
-									$right = substr($url, $leftLen + $oldHostLen);
-									
-									// Build a new URL with our replacement host
-									$url = $left . $matchedRule['rule'] . $right;
-									
-								}
-								else if (self::REWRITE_TYPE_FULL_URL == $matchedRule['type']) {
-									$filename = pathinfo($parsed['path'], PATHINFO_BASENAME);
-									$url = $matchedRule['rule'];
-									
-									// Make sure we have a / on the end
-									if (!$this->endswith($url, '/')) {
-										$url = $url . '/';
-									}
-									
-									$url = $url . $filename;
-								}
-								else {
-									// Unknown type, don't do anything
-								}
-								
-								$tag->setAttribute($attribute, $url);
-							}
+							$tag->setAttribute($attribute, $this->rewrite_url($url, $matchedRule));
 						}
 					}
 				}
 			}
 		}
+    }
+    
+    /**
+     * Rewrites one URL per the specified rule
+     *
+     * @param string  $url  The URL
+     * @param array   $rule Rewrite rule
+     * @return string The rewritten URL
+     */
+    protected function rewrite_url($url, $rule) {
+    	if (NULL == $rule) {
+    		return $url;
+    	}
+    	
+    	$ret = $url;
+    	
+		if (self::REWRITE_TYPE_HOST_ONLY == $rule['type']) {
+			$host = parse_url($ret, PHP_URL_HOST);
+			
+			// Find the stuff to the left and right of the host
+			$oldHostLen = strlen($host);
+			$leftLen = strpos($ret, $host); // strlen($parsed['scheme']);
+			$rightLen = strlen($ret) - ($leftLen + $oldHostLen);
+			
+			$left = substr($ret, 0, $leftLen);
+			$right = substr($ret, $leftLen + $oldHostLen);
+			
+			// Build a new URL with our replacement host
+			$ret = $left . $rule['rule'] . $right;
+			
+		}
+		else if (self::REWRITE_TYPE_FULL_URL == $rule['type']) {
+			$filename = pathinfo(parse_url($ret, PHP_URL_PATH), PATHINFO_BASENAME);
+			$ret = $rule['rule'];
+			
+			// Make sure we have a / on the end
+			if (!$this->endswith($ret, '/')) {
+				$ret = $ret . '/';
+			}
+			
+			$ret = $ret . $filename;
+		}
+		
+		return $ret;
     }
     
     /**
