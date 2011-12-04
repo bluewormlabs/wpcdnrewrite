@@ -1,13 +1,5 @@
 <?php
 /*
-Plugin Name: CDN Rewrite
-Plugin URI: http://github.com/bluewormlabs
-Version: 1.0
-Description: Rewrites URLs to files matching user-specified rules. This allows, for example, static content (e.g., images) to be loaded from a CDN instead of the server running the WordPress install.
-Author: Blue Worm Labs
-Author URI: http://bluewormlabs.com
-License: zlib
-
 Copyright (c) 2011 Blue Worm Labs, LLC
 
 This software is provided 'as-is', without any express or implied
@@ -56,4 +48,16 @@ function cdnrewrite_output_type_selector($selectedValue = null) {
     }
     $output .= "</select>";
     echo $output;
+}
+
+/**
+ * Callback function for ob_start(). Creates a CDN 
+ * Rewrite object and has it do the rewrite work.
+ * 
+ * @param string  $content The input string
+ * @return string Rewritten string
+ */
+function wpcdn_rewrite_content($content) {
+	$cdn = new WP_CDN_Rewrite();
+	return $cdn->rewrite_content($content);
 }
