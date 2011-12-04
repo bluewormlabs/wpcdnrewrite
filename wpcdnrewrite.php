@@ -95,7 +95,7 @@ class WP_CDN_Rewrite {
 	public function rewrite_the_content($content) {
 		$version = get_option(self::VERSION_KEY);
 		
-		if (strcmp($version, '1.0')) {
+		if (strcmp($version, '1.0') == 0) {
 			// $rules = array(
 			// 		array('type' => REWRITE_TYPE_HOST_ONLY | REWRITE_TYPE_FULL_URL,
 			// 			  'match' => 'jpg',
@@ -110,24 +110,22 @@ class WP_CDN_Rewrite {
 			$dom->loadHTML($content);
 			$dom->formatOutput = true;
 			
-			/*$anchors = $dom->getElementsByTagName('a');
-			foreach ($anchors as $anchor) {
-				if ($anchor->hasAttribute('href')) {
-					die('Found href = ' . $anchor->getAttribute('href'));
-					$anchor->setAttribute('href', 'HAHA');
-				}
-			}*/
-			$xpath = new DOMXpath($dom);
-			$anchors = $xpath->query('//a');
+			$anchors = $dom->getElementsByTagName('a');
 			if (!is_null($anchors)) {
-				foreach ($anchors as $node) {
-					$node->setAttribute('href', 'HITHERE');
+				foreach ($anchors as $anchor) {
+					if ($anchor->hasAttribute('href')) {
+						//$anchor->setAttribute('href', 'HAHA');
+					}
 				}
 			}
 			
 			$images = $dom->getElementsByTagName('img');
-			foreach ($images as $image) {
-				//
+			if (!is_null($images)) {
+				foreach ($images as $image) {
+					if ($image->hasAttribute('src')) {
+						//$image->setAttribute('src', 'HAHA');
+					}
+				}
 			}
 			
 			return $dom->saveXML();
