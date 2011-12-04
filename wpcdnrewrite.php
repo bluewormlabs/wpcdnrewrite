@@ -40,7 +40,7 @@ class WP_CDN_Rewrite {
 	const WHITELIST_KEY = 'wpcdnrewrite-whitelist'; // WP options key for domains to rewrite URLs for
 	const REWRITE_TYPE_HOST_ONLY = 1; // rewrite only the host portion of the url
 	const REWRITE_TYPE_FULL_URL = 2; // rewrite the full URL up to the file
-	const WPCDNDEBUG = TRUE;
+	const WPCDNDEBUG = FALSE;
 
 	public function __construct() {
         //only register the admin call backs if we're in the admin
@@ -240,7 +240,7 @@ class WP_CDN_Rewrite {
 			
 			// Find the stuff to the left and right of the host
 			$oldHostLen = strlen($host);
-			$leftLen = strpos($ret, $host); // strlen($parsed['scheme']);
+			$leftLen = strpos($ret, $host);
 			$rightLen = strlen($ret) - ($leftLen + $oldHostLen);
 			
 			$left = substr($ret, 0, $leftLen);
