@@ -53,12 +53,35 @@ class WP_CDN_Rewrite {
         register_activation_hook(__FILE__, array($this, 'activate'));
         register_uninstall_hook(__FILE__, array('WP_CDN_Rewrite', 'uninstall'));
         
+        /*
         // Add filters to run our rewrite code on
         add_filter('the_content', array($this, 'rewrite_content'), 20);
         add_filter('the_content_rss', array($this, 'rewrite_content'), 20);
         add_filter('the_content_feed', array($this, 'rewrite_content'), 20);
         add_filter('the_excerpt', array($this, 'rewrite_content'), 20);
         add_filter('the_excerpt_rss', array($this, 'rewrite_content'), 20);
+        //add_action('wp_head', array($this, 'rewrite_content'), 20);
+        //*/
+        
+        //add_filter('script_loader_src', array($this, 'script_loader_src'), 20, 2);
+        add_filter('muplugins_loaded', array($this, 'startup'), 5);
+        add_filter('plugins_loaded', array($this, 'startup'), 5);
+        add_filter('shutdown', array($this, 'shutdown'), 20);
+	}
+	
+	public function script_loader_src($source, $handle) {
+		//wp_die('Source:' . $source . ', Handle:' . $handle);
+	}
+	
+	// add_filter('muplugins_loaded', array($this, 'startup'), 5)
+	public function startup() {
+		$ret = ob_start('wpcdn_rewrite_content');
+		//error_log('ob_start returns ' . $ret);
+	}
+	
+	// add_filter('shutdown', array($this, 'shutdown'), 20)
+	public function shutdown() {
+		@ob_end_flush();
 	}
 
     /**
@@ -115,7 +138,7 @@ class WP_CDN_Rewrite {
      * @return string The new content with appropriate URLs rewritten
      */
     public function rewrite_content($content) {
-		// Grab the version number we're working with
+    	// Grab the version number we're working with
 		$version = get_option(self::VERSION_KEY);
 		
 		if (strcmp($version, '1.0') == 0) {
@@ -151,13 +174,7 @@ class WP_CDN_Rewrite {
 			$this->do_rewrite(&$dom, $rules, $whitelist, 'img', 'src');
 			
 			// Grab the modified HTML
-			$newContent = $dom->saveXML();
-			
-			// Strip off the extra stuff it added
-			$openBody = strpos($newContent, '<body>');
-			$newContent = substr($newContent, $openBody + 6);
-			$closeBody = strpos($newContent, '</body>');
-			$newContent = substr($newContent, 0, $closeBody);
+			$newContent = $dom->saveHTML();
 			
 			return $newContent;
 		}
@@ -315,6 +332,11 @@ class WP_CDN_Rewrite {
 	protected function endswith($haystack, $needle){
 	    return strrpos($haystack, $needle) === strlen($haystack) - strlen($needle);
 	}
+}
+
+function wpcdn_rewrite_content($content) {
+	$cdn = new WP_CDN_Rewrite();
+	return $cdn->rewrite_content($content);
 }
 
 new WP_CDN_Rewrite();
