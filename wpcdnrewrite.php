@@ -90,13 +90,41 @@ class WP_CDN_Rewrite {
 		$version = get_option(self::VERSION_KEY);
 		
 		if (strcmp($version, '1.0')) {
-			// array(
-			// 	array('type' => REWRITE_TYPE_HOST_ONLY | REWRITE_TYPE_FULL_URL,
-			// 		  'match' => 'jpg',
-			// 		  'rule' => 'http://cdn.myhost.com/images/jpeg/'),
-			// )
+			// $rules = array(
+			// 		array('type' => REWRITE_TYPE_HOST_ONLY | REWRITE_TYPE_FULL_URL,
+			// 			  'match' => 'jpg',
+			// 			  'rule' => 'http://cdn.myhost.com/images/jpeg/'),
+			// 		// ...
+			// );
 			$rules = get_option(self::RULES_KEY);
 			$whitelist = get_option(self::WHITELIST_KEY);
+			
+			// Get a DOM object for this content that we can manipulate
+			$dom = new DOMDocument();
+			$dom->loadHTML($content);
+			$dom->formatOutput = true;
+			
+			/*$anchors = $dom->getElementsByTagName('a');
+			foreach ($anchors as $anchor) {
+				if ($anchor->hasAttribute('href')) {
+					die('Found href = ' . $anchor->getAttribute('href'));
+					$anchor->setAttribute('href', 'HAHA');
+				}
+			}*/
+			$xpath = new DOMXpath($dom);
+			$anchors = $xpath->query('//a');
+			if (!is_null($anchors)) {
+				foreach ($anchors as $node) {
+					$node->setAttribute('href', 'HITHERE');
+				}
+			}
+			
+			$images = $dom->getElementsByTagName('img');
+			foreach ($images as $image) {
+				//
+			}
+			
+			return $dom->saveXML();
 		}
 		
 		return $content;
