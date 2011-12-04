@@ -194,6 +194,14 @@ class WP_CDN_Rewrite {
 				// …and look for ones that have the requested attribute
 				if ($tag->hasAttribute($attribute)) {
 					$url = $tag->getAttribute($attribute);
+					
+					if ($this->startswith($url, '/')) {
+						$base = network_site_url();
+						if (!$this->startswith($base, '/')) {
+							$base = $base . '/';
+						}
+						$url = $base . $url;
+					}
 					$parsed = parse_url($url);
 					
 					if (FALSE !== $parsed) {
@@ -238,6 +246,11 @@ class WP_CDN_Rewrite {
 		if (self::REWRITE_TYPE_HOST_ONLY == $rule['type']) {
 			$host = parse_url($ret, PHP_URL_HOST);
 			
+			// Set the scheme and host if we have an absolute path
+			if (FALSE === $host) {
+				$host = network_site_url();
+			}
+			
 			// Find the stuff to the left and right of the host
 			$oldHostLen = strlen($host);
 			$leftLen = strpos($ret, $host);
@@ -260,6 +273,16 @@ class WP_CDN_Rewrite {
 			}
 			
 			$ret = $ret . $filename;
+			
+			// Add in the scheme and host for an absolute path
+			if ($this->startswith($ret, '/')) {
+				$base = network_site_url();
+				if (!$this->endswith($base, '/')) {
+					$base = $base . '/';
+				}
+				
+				$ret = $base . $ret;
+			}
 		}
 		
 		return $ret;
