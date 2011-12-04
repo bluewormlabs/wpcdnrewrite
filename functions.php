@@ -32,21 +32,27 @@ freely, subject to the following restrictions:
 
 function cdnrewrite_output_type_selector($selectedValue = null) {
     $optionArray = array(
-        WP_CDN_Rewrite::REWRITE_TYPE_FULL_URL => false,
-        WP_CDN_Rewrite::REWRITE_TYPE_HOST_ONLY => false,
+        WP_CDN_Rewrite::REWRITE_TYPE_FULL_URL => array(
+            'selected' => false,
+            'outputValue' => 'Rewrite Full URL',
+        ),
+        WP_CDN_Rewrite::REWRITE_TYPE_HOST_ONLY => array(
+            'selected' => false,
+            'outputValue' => 'Rewrite Host Only',
+        ),
     );
 
     if(! is_null($selectedValue) && isset($optionArray[$selectedValue])) {
         $optionArray[$selectedValue] = true;
     }
 
-    $output = "<select name=" . WP_CDN_Rewrite::RULES_KEY . "\">\n";
-    foreach($optionArray as $optionValue => $optionSelected) {
+    $output = "<select name=" . WP_CDN_Rewrite::RULES_KEY . "[][type]\">\n";
+    foreach($optionArray as $optionValue => $optionValueArray) {
         $output .= "<option value=\"{$optionValue}\" ";
-        if($optionSelected) {
+        if($optionValueArray['selected']) {
             $output .= "selected=\"true\" ";
         }
-        $output .= ">{$optionValue}</option>\n";
+        $output .= ">{$optionValueArray['outputValue']}</option>\n";
     }
     $output .= "</select>";
     echo $output;

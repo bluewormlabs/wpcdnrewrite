@@ -14,10 +14,25 @@ jQuery(document).ready(function($){
 
         //also update the rows id
         row = row.attr('id', 'domain' + rowCount);
-        row.insertBefore('#addRow');
+        row.insertBefore('#addDomainRow');
     });
 
+    $("#addRule").click(function() {
+        var rowCount = $('[id^="rule"]').length;
+        var row = $('#rule0').clone();
 
+        //update the attributes of the input in our row
+        row.find('input:not(.button-primary)').val('');
+
+        //
+        while($('#rule' + rowCount).length) {
+            rowCount++;
+        }
+
+        //also update the rows id
+        row = row.attr('id', 'rule' + rowCount);
+        row.insertBefore('#addRuleRow');
+    });
 });
 
 
