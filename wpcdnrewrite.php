@@ -30,6 +30,9 @@ freely, subject to the following restrictions:
    distribution.
 */
 
+// Load any external functions
+require_once('functions.php');
+
 class WP_CDN_Rewrite {
 	const NAME = 'CDN Rewrite';
 	const SLUG = 'wpcdnrewrite';
@@ -53,33 +56,27 @@ class WP_CDN_Rewrite {
         register_activation_hook(__FILE__, array($this, 'activate'));
         register_uninstall_hook(__FILE__, array('WP_CDN_Rewrite', 'uninstall'));
         
-        /*
         // Add filters to run our rewrite code on
-        add_filter('the_content', array($this, 'rewrite_content'), 20);
-        add_filter('the_content_rss', array($this, 'rewrite_content'), 20);
-        add_filter('the_content_feed', array($this, 'rewrite_content'), 20);
-        add_filter('the_excerpt', array($this, 'rewrite_content'), 20);
-        add_filter('the_excerpt_rss', array($this, 'rewrite_content'), 20);
-        //add_action('wp_head', array($this, 'rewrite_content'), 20);
-        //*/
-        
-        //add_filter('script_loader_src', array($this, 'script_loader_src'), 20, 2);
-        add_filter('muplugins_loaded', array($this, 'startup'), 5);
-        add_filter('plugins_loaded', array($this, 'startup'), 5);
+        if (function_exists('is_multisite') && is_multisite()) {
+        	add_filter('muplugins_loaded', array($this, 'startup'), 5);
+        }
+        else {
+        	add_filter('plugins_loaded', array($this, 'startup'), 5);
+        }
         add_filter('shutdown', array($this, 'shutdown'), 20);
 	}
 	
-	public function script_loader_src($source, $handle) {
-		//wp_die('Source:' . $source . ', Handle:' . $handle);
-	}
-	
-	// add_filter('muplugins_loaded', array($this, 'startup'), 5)
+	/**
+	 * Filter to start buffering at the start of WordPress' work
+	 */
 	public function startup() {
 		$ret = ob_start('wpcdn_rewrite_content');
 		//error_log('ob_start returns ' . $ret);
 	}
 	
-	// add_filter('shutdown', array($this, 'shutdown'), 20)
+	/**
+	 * Filter to end buffering/flush any remaining buffer at the end of WordPress' work
+	 */
 	public function shutdown() {
 		@ob_end_flush();
 	}
@@ -377,11 +374,6 @@ class WP_CDN_Rewrite {
         }
         return true;
     }
-}
-
-function wpcdn_rewrite_content($content) {
-	$cdn = new WP_CDN_Rewrite();
-	return $cdn->rewrite_content($content);
 }
 
 new WP_CDN_Rewrite();

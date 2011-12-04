@@ -51,3 +51,15 @@ function cdnrewrite_output_type_selector($selectedValue = null) {
     $output .= "</select>";
     echo $output;
 }
+
+/**
+ * Callback function for ob_start(). Creates a CDN 
+ * Rewrite object and has it do the rewrite work.
+ * 
+ * @param string  $content The input string
+ * @return string Rewritten string
+ */
+function wpcdn_rewrite_content($content) {
+	$cdn = new WP_CDN_Rewrite();
+	return $cdn->rewrite_content($content);
+}
