@@ -40,7 +40,7 @@ class WP_CDN_Rewrite {
 	const WHITELIST_KEY = 'wpcdnrewrite-whitelist'; // WP options key for domains to rewrite URLs for
 	const REWRITE_TYPE_HOST_ONLY = 1; // rewrite only the host portion of the url
 	const REWRITE_TYPE_FULL_URL = 2; // rewrite the full URL up to the file
-	const WPCDNDEBUG = TRUE;
+	const WPCDNDEBUG = FALSE;
 
 	public function __construct() {
         //only register the admin call backs if we're in the admin
@@ -54,7 +54,11 @@ class WP_CDN_Rewrite {
         register_uninstall_hook(__FILE__, array('WP_CDN_Rewrite', 'uninstall'));
         
         // Add filters to run our rewrite code on
-        add_filter('the_content', array($this, 'rewrite_the_content'), 20);
+        add_filter('the_content', array($this, 'rewrite_content'), 20);
+        add_filter('the_content_rss', array($this, 'rewrite_content'), 20);
+        add_filter('the_content_feed', array($this, 'rewrite_content'), 20);
+        add_filter('the_excerpt', array($this, 'rewrite_content'), 20);
+        add_filter('the_excerpt_rss', array($this, 'rewrite_content'), 20);
 	}
 
     /**
@@ -105,12 +109,12 @@ class WP_CDN_Rewrite {
 	}
 	
 	/**
-     * Rewrites output of the_content() per specified rules
+     * Rewrites the specified content per specified rules
      *
      * @param string  $content The text to rewrite
      * @return string The new content with appropriate URLs rewritten
      */
-    public function rewrite_the_content($content) {
+    public function rewrite_content($content) {
 		// Grab the version number we're working with
 		$version = get_option(self::VERSION_KEY);
 		
@@ -194,6 +198,14 @@ class WP_CDN_Rewrite {
 				// …and look for ones that have the requested attribute
 				if ($tag->hasAttribute($attribute)) {
 					$url = $tag->getAttribute($attribute);
+					
+					if ($this->startswith($url, '/')) {
+						$base = network_site_url();
+						if (!$this->startswith($base, '/')) {
+							$base = $base . '/';
+						}
+						$url = $base . $url;
+					}
 					$parsed = parse_url($url);
 					
 					if (FALSE !== $parsed) {
@@ -238,9 +250,14 @@ class WP_CDN_Rewrite {
 		if (self::REWRITE_TYPE_HOST_ONLY == $rule['type']) {
 			$host = parse_url($ret, PHP_URL_HOST);
 			
+			// Set the scheme and host if we have an absolute path
+			if (FALSE === $host) {
+				$host = network_site_url();
+			}
+			
 			// Find the stuff to the left and right of the host
 			$oldHostLen = strlen($host);
-			$leftLen = strpos($ret, $host); // strlen($parsed['scheme']);
+			$leftLen = strpos($ret, $host);
 			$rightLen = strlen($ret) - ($leftLen + $oldHostLen);
 			
 			$left = substr($ret, 0, $leftLen);
@@ -260,6 +277,16 @@ class WP_CDN_Rewrite {
 			}
 			
 			$ret = $ret . $filename;
+			
+			// Add in the scheme and host for an absolute path
+			if ($this->startswith($ret, '/')) {
+				$base = network_site_url();
+				if (!$this->endswith($base, '/')) {
+					$base = $base . '/';
+				}
+				
+				$ret = $base . $ret;
+			}
 		}
 		
 		return $ret;
