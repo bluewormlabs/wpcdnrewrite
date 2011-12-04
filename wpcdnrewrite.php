@@ -310,7 +310,7 @@ class WP_CDN_Rewrite {
 
                 $validDomain = self::validateDomainName($value);
                 if(false == $validDomain) {
-                    add_settings_error(self::WHITELIST_KEY, self::WHITELIST_KEY, "Invalid domain name entered");
+                    add_settings_error(self::WHITELIST_KEY, self::WHITELIST_KEY, "Invalid domain name \"{$value}\" entered");
                 } else {
                     $valueArray[$key] = $value;
                 }
