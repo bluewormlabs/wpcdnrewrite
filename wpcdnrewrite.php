@@ -71,7 +71,6 @@ class WP_CDN_Rewrite {
 	 */
 	public function startup() {
 		$ret = ob_start('wpcdn_rewrite_content');
-		//error_log('ob_start returns ' . $ret);
 	}
 	
 	/**
