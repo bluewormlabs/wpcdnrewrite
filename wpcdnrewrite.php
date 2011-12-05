@@ -43,7 +43,6 @@ class WP_CDN_Rewrite {
 	const WHITELIST_KEY = 'wpcdnrewrite-whitelist'; // WP options key for domains to rewrite URLs for
 	const REWRITE_TYPE_HOST_ONLY = 1; // rewrite only the host portion of the url
 	const REWRITE_TYPE_FULL_URL = 2; // rewrite the full URL up to the file
-	const WPCDNDEBUG = FALSE;
 
 	public function __construct() {
         //only register the admin call backs if we're in the admin
@@ -141,24 +140,6 @@ class WP_CDN_Rewrite {
 			// Pull the rules and whitelist arrays from the database
 			$rules = get_option(self::RULES_KEY);
 			$whitelist = get_option(self::WHITELIST_KEY);
-			
-			// If debug mode is on, hard-code some rules and whitelist
-			if (self::WPCDNDEBUG) {
-				$rules = array(
-					array(
-						'type' => self::REWRITE_TYPE_FULL_URL,
-						'match' => 'png',
-						'rule' => 'http://cdn.wpdev.local/images'
-					),
-					array(
-						'type' => self::REWRITE_TYPE_HOST_ONLY,
-						'match' => 'jpg',
-						'rule' => 'l1.yimg.com'
-					)
-				);
-				
-				$whitelist = array(parse_url(network_site_url(), PHP_URL_HOST), 'yahoo.com');
-			}
 			
 			// Get a DOM object for this content that we can manipulate
 			$dom = new DOMDocument();
@@ -306,6 +287,12 @@ class WP_CDN_Rewrite {
     }
 
 
+    /**
+     * Sanitize the array of rules
+     *
+     * @param array $ruleArray
+     * @return array
+     */
     public function sanitize_rules(array $ruleArray) {
         $allowedTypes = array(
             self::REWRITE_TYPE_FULL_URL,
