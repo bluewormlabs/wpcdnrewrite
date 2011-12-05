@@ -50,7 +50,7 @@ require_once(dirname(__DIR__) . '/functions.php');
 <?php
                         if($count !== 0) {
 ?>
-                            <input type="button" class="button-primary" id="removeDomain<?php echo $count;?>" value="-" onClick="removeRow(this);" />
+                            <input type="button" class="button-secondary" id="removeDomain<?php echo $count;?>" value="-" onClick="removeRow(this);" />
                     <?php
                         }
 ?>
@@ -61,11 +61,11 @@ require_once(dirname(__DIR__) . '/functions.php');
             }
 ?>
                 <tr id="addDomainRow">
-                    <td colspan="2">
-
+                    <td align="right">
+                        <input type="button" class="button-secondary" id="addDomain" value="Add" />
                     </td>
                     <td>
-                        <input type="button" class="button-primary" id="addDomain" value="Add" />
+                    	&nbsp;
                     </td>
                 </tr>
 <?php
@@ -106,7 +106,7 @@ require_once(dirname(__DIR__) . '/functions.php');
                         <input type="text" name="<?php echo WP_CDN_Rewrite::RULES_KEY;?>[<?php echo $count;?>][rule]" value="<?php echo $rule['rule'];?>" />
                     </td>
                     <td>
-                        <input type="button" class="button-primary" id="removeDomain<?php echo $count;?>" value="-" onClick="removeRow(this);" />
+                        <input type="button" class="button-secondary" id="removeDomain<?php echo $count;?>" value="-" onClick="removeRow(this);" />
                     </td>
                 </tr>
 <?php
@@ -125,18 +125,21 @@ require_once(dirname(__DIR__) . '/functions.php');
                 <input type="text" name="<?php echo WP_CDN_Rewrite::RULES_KEY;?>[<?php echo $count;?>][rule]"/>
             </td>
             <td>
-                <input type="button" class="button-primary" id="removeRule<?php echo $count;?>" value="-" onClick="removeRow(this);" />
+                <input type="button" class="button-secondary" id="removeRule<?php echo $count;?>" value="-" onClick="removeRow(this);" />
             </td>
         </tr>
         <?php
         $count++;
         ?>
         <tr id="addRuleRow">
-            <td colspan="3">
+            <td colspan="2">
                 &nbsp;
             </td>
+            <td align="right">
+                <input type="button" class="button-secondary" id="addRule" value="Add" />
+            </td>
             <td>
-                <input type="button" class="button-primary" id="addRule" value="Add" />
+            	&nbsp;
             </td>
         </tr>
         </tbody>
