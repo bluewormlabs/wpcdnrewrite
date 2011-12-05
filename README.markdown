@@ -16,7 +16,9 @@ own.
 The following are rewritten if a rule matches:
 
 1. Values in `href` attributes of A tags
-2. Values in `src` attributes of IMG tags
+2. Values in `href` attributes of LINK tags
+3. Values in `src` attributes of IMG tags
+4. Values in `src` attributes of SCRIPT tags
 
 License: [zlib/libpng license][1]
 
