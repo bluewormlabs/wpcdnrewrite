@@ -28,12 +28,8 @@ require_once(dirname(__DIR__) . '/functions.php');
 
 <form id="wpcdnrewrite-config-form" method="post" action="options.php">
     <!-- START WHITELIST section -->
+    <h3>Domains to do rewriting for</h3>
     <table id="whitelistTable">
-        <thead>
-            <tr>
-                <th colspan="3"><h3>Domains to do rewriting for</h3></th>
-            </tr>
-        </thead>
         <tbody>
 <?php
         $domainArray = get_option(WP_CDN_Rewrite::WHITELIST_KEY);
@@ -75,11 +71,9 @@ require_once(dirname(__DIR__) . '/functions.php');
     </table>
     <!-- END WHITELIST section -->
     <!-- START RULES section -->
+    <h3>Rewrite Rules</h3>
     <table id="rulesTable">
         <thead>
-            <tr>
-                <th colspan="3"><h3>Rewrite Rules</h3></th>
-            </tr>
             <tr>
                 <th>Rewrite Type</th>
                 <th>File Extension</th>
