@@ -85,7 +85,7 @@ class WP_CDN_Rewrite {
      * to add our settings to the whitelist of allowed options
      */
     public function admin_init() {
-        register_setting('wpcdnrewrite', self::RULES_KEY);
+        register_setting('wpcdnrewrite', self::RULES_KEY, array($this, 'sanitize_rules'));
         register_setting('wpcdnrewrite', self::WHITELIST_KEY, array($this, 'sanitize_whitelist'));
     }
 	
@@ -303,6 +303,47 @@ class WP_CDN_Rewrite {
 		}
 		
 		return $ret;
+    }
+
+
+    public function sanitize_rules(array $ruleArray) {
+        $allowedTypes = array(
+            self::REWRITE_TYPE_FULL_URL,
+            self::REWRITE_TYPE_HOST_ONLY,
+        );
+
+        foreach($ruleArray as $key => $rule) {
+            if(! in_array($rule['type'], $allowedTypes)) {
+                unset($ruleArray[$key]);
+                add_settings_error(self::RULES_KEY, self::RULES_KEY, "Invalid rule type entered");
+                continue;
+            }
+
+            $rule['match'] = preg_replace('/\W/', '', $rule['match']);
+            if(trim($rule['match']) == '') {
+                unset($ruleArray[$key]);
+                continue;
+            }
+
+            $validRule = true;
+            if($rule['type'] == self::REWRITE_TYPE_FULL_URL) {
+                $rule['rule'] = filter_var($rule['rule'], FILTER_SANITIZE_URL);
+                $validRule = filter_var($rule['rule'], FILTER_VALIDATE_URL);
+            } elseif($rule['type'] == self::REWRITE_TYPE_HOST_ONLY) {
+                $rule['rule'] = preg_replace("/[http|https]:\/\//", "", $rule['rule']);
+                $validRule = self::validateDomainName($rule['rule']);
+            }
+
+            if(! $validRule) {
+                unset($ruleArray[$key]);
+                add_settings_error(self::RULES_KEY, self::RULES_KEY, "Invalid rewrite URL entered");
+            } else {
+                $ruleArray[$key] = $rule;
+            }
+        }
+
+        $ruleArray = array_values($ruleArray);
+        return $ruleArray;
     }
 
     /**

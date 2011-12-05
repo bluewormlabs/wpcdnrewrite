@@ -97,13 +97,13 @@ require_once(dirname(__DIR__) . '/functions.php');
 ?>
                 <tr id="rule<?php echo $count;?>">
                     <td>
-                        <?php cdnrewrite_output_type_selector($rule['type']); ?>
+                        <?php cdnrewrite_output_type_selector($count, $rule['type']); ?>
                     </td>
                     <td>
-                        <input type="text" name="<?php echo WP_CDN_Rewrite::RULES_KEY;?>[][match]" value="<?php echo $rule['match'];?>" />
+                        <input type="text" name="<?php echo WP_CDN_Rewrite::RULES_KEY;?>[<?php echo $count;?>][match]" value="<?php echo $rule['match'];?>" />
                     </td>
                     <td>
-                        <input type="text" name="<?php echo WP_CDN_Rewrite::RULES_KEY;?>[][rule]" value="<?php echo $rule['match'];?>" />
+                        <input type="text" name="<?php echo WP_CDN_Rewrite::RULES_KEY;?>[<?php echo $count;?>][rule]" value="<?php echo $rule['rule'];?>" />
                     </td>
                     <td>
                         <input type="button" class="button-primary" id="removeDomain<?php echo $count;?>" value="-" onClick="removeRow(this);" />
@@ -116,13 +116,13 @@ require_once(dirname(__DIR__) . '/functions.php');
 ?>
         <tr id="rule<?php echo $count;?>">
             <td>
-                <?php cdnrewrite_output_type_selector(); ?>
+                <?php cdnrewrite_output_type_selector($count); ?>
             </td>
             <td>
-                <input type="text" name="<?php echo WP_CDN_Rewrite::RULES_KEY;?>[][match]"/>
+                <input type="text" name="<?php echo WP_CDN_Rewrite::RULES_KEY;?>[<?php echo $count;?>][match]"/>
             </td>
             <td>
-                <input type="text" name="<?php echo WP_CDN_Rewrite::RULES_KEY;?>[][rule]"/>
+                <input type="text" name="<?php echo WP_CDN_Rewrite::RULES_KEY;?>[<?php echo $count;?>][rule]"/>
             </td>
             <td>
                 <input type="button" class="button-primary" id="removeRule<?php echo $count;?>" value="-" onClick="removeRow(this);" />

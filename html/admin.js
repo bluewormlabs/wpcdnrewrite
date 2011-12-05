@@ -29,6 +29,11 @@ jQuery(document).ready(function($){
             rowCount++;
         }
 
+        row.find('[name="wpcdnrewrite-rules[0][rule]"]').attr('name', 'wpcdnrewrite-rules['+rowCount+'][rule]');
+        row.find('[name="wpcdnrewrite-rules[0][type]"]').attr('name', 'wpcdnrewrite-rules['+rowCount+'][type]');
+        row.find('[name="wpcdnrewrite-rules[0][match]"]').attr('name', 'wpcdnrewrite-rules['+rowCount+'][match]');
+
+
         //also update the rows id
         row = row.attr('id', 'rule' + rowCount);
         row.insertBefore('#addRuleRow');

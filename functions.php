@@ -22,7 +22,7 @@ freely, subject to the following restrictions:
    distribution.
 */
 
-function cdnrewrite_output_type_selector($selectedValue = null) {
+function cdnrewrite_output_type_selector($count, $selectedValue = null) {
     $optionArray = array(
         WP_CDN_Rewrite::REWRITE_TYPE_FULL_URL => array(
             'selected' => false,
@@ -35,10 +35,10 @@ function cdnrewrite_output_type_selector($selectedValue = null) {
     );
 
     if(! is_null($selectedValue) && isset($optionArray[$selectedValue])) {
-        $optionArray[$selectedValue] = true;
+        $optionArray[$selectedValue]['selected'] = true;
     }
 
-    $output = "<select name=" . WP_CDN_Rewrite::RULES_KEY . "[][type]\">\n";
+    $output = "<select name=\"" . WP_CDN_Rewrite::RULES_KEY . "[{$count}][type]\">";
     foreach($optionArray as $optionValue => $optionValueArray) {
         $output .= "<option value=\"{$optionValue}\" ";
         if($optionValueArray['selected']) {
