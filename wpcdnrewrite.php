@@ -69,14 +69,18 @@ class WP_CDN_Rewrite {
 	 * Filter to start buffering at the start of WordPress' work
 	 */
 	public function startup() {
-		$ret = ob_start('wpcdn_rewrite_content');
+		if (!is_admin()) {
+			$ret = ob_start('wpcdn_rewrite_content');
+		}
 	}
 	
 	/**
 	 * Filter to end buffering/flush any remaining buffer at the end of WordPress' work
 	 */
 	public function shutdown() {
-		@ob_end_flush();
+		if (!is_admin()) {
+			@ob_end_flush();
+		}
 	}
 
     /**
