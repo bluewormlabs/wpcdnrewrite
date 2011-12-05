@@ -342,6 +342,7 @@ class WP_CDN_Rewrite {
             }
         }
 
+        //make sure all the indexes are contiguous
         $ruleArray = array_values($ruleArray);
         return $ruleArray;
     }
@@ -371,6 +372,8 @@ class WP_CDN_Rewrite {
             }
         }
 
+        //make sure all the indexes are contiguous
+        $valueArray = array_values($valueArray);
         return $valueArray;
     }
 
