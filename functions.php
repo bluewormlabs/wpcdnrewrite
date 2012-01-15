@@ -22,6 +22,16 @@ freely, subject to the following restrictions:
    distribution.
 */
 
+/**
+ * Generates HTML to select the type of the rewrite rule
+ *
+ * @package WP CDN Rewrite
+ * @since 1.0
+ * 
+ * @param     int     $count           The rule number
+ * @param     int     $selectedValue   WP_CDN_Rewrite::REWRITE_TYPE_* constant for the value to display as selected
+ * @return    string  The HTML
+ */
 function cdnrewrite_output_type_selector($count, $selectedValue = null) {
     $optionArray = array(
         WP_CDN_Rewrite::REWRITE_TYPE_FULL_URL => array(
@@ -34,14 +44,14 @@ function cdnrewrite_output_type_selector($count, $selectedValue = null) {
         ),
     );
 
-    if(! is_null($selectedValue) && isset($optionArray[$selectedValue])) {
+    if (!is_null($selectedValue) && isset($optionArray[$selectedValue])) {
         $optionArray[$selectedValue]['selected'] = true;
     }
 
     $output = "<select name=\"" . WP_CDN_Rewrite::RULES_KEY . "[{$count}][type]\">";
-    foreach($optionArray as $optionValue => $optionValueArray) {
+    foreach ($optionArray as $optionValue => $optionValueArray) {
         $output .= "<option value=\"{$optionValue}\" ";
-        if($optionValueArray['selected']) {
+        if ($optionValueArray['selected']) {
             $output .= "selected=\"true\" ";
         }
         $output .= ">{$optionValueArray['outputValue']}</option>\n";
@@ -53,6 +63,9 @@ function cdnrewrite_output_type_selector($count, $selectedValue = null) {
 /**
  * Callback function for ob_start(). Creates a CDN 
  * Rewrite object and has it do the rewrite work.
+ * 
+ * @package WP CDN Rewrite
+ * @since 1.0
  * 
  * @param string  $content The input string
  * @return string Rewritten string
