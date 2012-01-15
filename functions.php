@@ -32,7 +32,7 @@ freely, subject to the following restrictions:
  * @param     int     $selectedValue   WP_CDN_Rewrite::REWRITE_TYPE_* constant for the value to display as selected
  * @return    string  The HTML
  */
-function cdnrewrite_output_type_selector($count, $selectedValue = null) {
+function cdnrewrite_output_type_selector( $count, $selectedValue = null ) {
     $optionArray = array(
         WP_CDN_Rewrite::REWRITE_TYPE_FULL_URL => array(
             'selected' => false,
@@ -44,19 +44,19 @@ function cdnrewrite_output_type_selector($count, $selectedValue = null) {
         ),
     );
 
-    if (!is_null($selectedValue) && isset($optionArray[$selectedValue])) {
+    if ( ! is_null( $selectedValue ) && isset( $optionArray[$selectedValue] ) ) {
         $optionArray[$selectedValue]['selected'] = true;
     }
 
-    $output = "<select name=\"" . WP_CDN_Rewrite::RULES_KEY . "[{$count}][type]\">";
-    foreach ($optionArray as $optionValue => $optionValueArray) {
-        $output .= "<option value=\"{$optionValue}\" ";
-        if ($optionValueArray['selected']) {
-            $output .= "selected=\"true\" ";
+    $output = "<select name='" . WP_CDN_Rewrite::RULES_KEY . "[{$count}][type]'>";
+    foreach ( $optionArray as $optionValue => $optionValueArray ) {
+        $output .= "<option value='{$optionValue}' ";
+        if ( $optionValueArray['selected'] ) {
+            $output .= 'selected="true" ';
         }
         $output .= ">{$optionValueArray['outputValue']}</option>\n";
     }
-    $output .= "</select>";
+    $output .= '</select>';
     echo $output;
 }
 
@@ -70,7 +70,7 @@ function cdnrewrite_output_type_selector($count, $selectedValue = null) {
  * @param string  $content The input string
  * @return string Rewritten string
  */
-function wpcdn_rewrite_content($content) {
+function wpcdn_rewrite_content( $content ) {
 	$cdn = new WP_CDN_Rewrite();
-	return $cdn->rewrite_content($content);
+	return $cdn->rewrite_content( $content );
 }

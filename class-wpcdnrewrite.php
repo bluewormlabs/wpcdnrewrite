@@ -1,39 +1,8 @@
 <?php
-/*
-Plugin Name: CDN Rewrite
-Plugin URI: http://github.com/bluewormlabs
-Version: 1.0
-Description: Rewrites URLs to files matching user-specified rules. This allows, for example, static content (e.g., images) to be loaded from a CDN instead of the server running the WordPress install.
-Author: Blue Worm Labs
-Author URI: http://bluewormlabs.com
-License: zlib
-
-Copyright (c) 2011 Blue Worm Labs, LLC
-
-This software is provided 'as-is', without any express or implied
-warranty. In no event will the authors be held liable for any damages
-arising from the use of this software.
-
-Permission is granted to anyone to use this software for any purpose,
-including commercial applications, and to alter it and redistribute it
-freely, subject to the following restrictions:
-
-   1. The origin of this software must not be misrepresented; you must not
-   claim that you wrote the original software. If you use this software
-   in a product, an acknowledgment in the product documentation would be
-   appreciated but is not required.
-
-   2. Altered source versions must be plainly marked as such, and must not be
-   misrepresented as being the original software.
-
-   3. This notice may not be removed or altered from any source
-   distribution.
-*/
-
 /**
  * External/shared functions
  */
-require_once('functions.php');
+require_once( 'functions.php' );
 
 class WP_CDN_Rewrite {
 	/**
@@ -92,23 +61,22 @@ class WP_CDN_Rewrite {
 	 */
 	public function __construct() {
         // Only register the admin call backs if we're in the admin app
-        if (is_admin()) {
-            add_action('admin_menu', array($this, 'admin_menu'));
-            add_action('admin_init', array($this, 'admin_init'));
-            add_action('admin_enqueue_scripts', array($this, 'include_admin_javascript'));
+        if ( is_admin() ) {
+            add_action( 'admin_menu', array( $this, 'admin_menu' ) );
+            add_action( 'admin_init', array( $this, 'admin_init' ) );
+            add_action( 'admin_enqueue_scripts', array( $this, 'include_admin_javascript' ) );
         }
 
-        register_activation_hook(__FILE__, array($this, 'activate'));
-        register_uninstall_hook(__FILE__, array('WP_CDN_Rewrite', 'uninstall'));
+        register_activation_hook( __FILE__, array( $this, 'activate' ) );
+        register_uninstall_hook( __FILE__, array( 'WP_CDN_Rewrite', 'uninstall' ) );
         
         // Add filters to run our rewrite code on
-        if (function_exists('is_multisite') && is_multisite()) {
-        	add_filter('muplugins_loaded', array($this, 'startup'), 5);
+        if ( function_exists( 'is_multisite' ) && is_multisite() ) {
+        	add_filter( 'muplugins_loaded', array( $this, 'startup' ), 5 );
+        } else {
+        	add_filter( 'plugins_loaded', array( $this, 'startup' ), 5 );
         }
-        else {
-        	add_filter('plugins_loaded', array($this, 'startup'), 5);
-        }
-        add_filter('shutdown', array($this, 'shutdown'), 20);
+        add_filter( 'shutdown', array( $this, 'shutdown' ), 20 );
 	}
 	
 	/**
@@ -120,8 +88,8 @@ class WP_CDN_Rewrite {
 	 * @return    void
 	 */
 	public function startup() {
-		if (!is_admin()) {
-			$ret = ob_start('wpcdn_rewrite_content');
+		if ( ! is_admin() ) {
+			$ret = ob_start( 'wpcdn_rewrite_content' );
 		}
 	}
 	
@@ -134,7 +102,7 @@ class WP_CDN_Rewrite {
 	 * @return void
 	 */
 	public function shutdown() {
-		if (!is_admin()) {
+		if ( ! is_admin() ) {
 			@ob_end_flush();
 		}
 	}
@@ -149,8 +117,8 @@ class WP_CDN_Rewrite {
 	 * @return    void
      */
     public function admin_init() {
-        register_setting('wpcdnrewrite', self::RULES_KEY, array($this, 'sanitize_rules'));
-        register_setting('wpcdnrewrite', self::WHITELIST_KEY, array($this, 'sanitize_whitelist'));
+        register_setting( 'wpcdnrewrite', self::RULES_KEY, array( $this, 'sanitize_rules' ) );
+        register_setting( 'wpcdnrewrite', self::WHITELIST_KEY, array( $this, 'sanitize_whitelist' ) );
     }
 	
 	/**
@@ -162,7 +130,7 @@ class WP_CDN_Rewrite {
 	 * @return    void
      */
     public function admin_menu() {
-		add_options_page(self::NAME, self::NAME, self::REQUIRED_CAPABILITY, self::SLUG, array($this, 'show_config'));
+		add_options_page( self::NAME, self::NAME, self::REQUIRED_CAPABILITY, self::SLUG, array( $this, 'show_config' ) );
 	}
 
     /**
@@ -171,11 +139,11 @@ class WP_CDN_Rewrite {
      * @return    void
      */
     public function activate() {
-        $host = parse_url(network_site_url(), PHP_URL_HOST);
-        //add_option only runs if the option doesn't exist
-        add_option(self::VERSION_KEY, self::VERSION);
-        add_option(self::RULES_KEY, array());
-        add_option(self::WHITELIST_KEY, array($host));
+        $host = parse_url( network_site_url(), PHP_URL_HOST );
+        // add_option only runs if the option doesn't exist
+        add_option( self::VERSION_KEY, self::VERSION );
+        add_option( self::RULES_KEY, array() );
+        add_option( self::WHITELIST_KEY, array( $host ) );
     }
 
     /**
@@ -187,7 +155,7 @@ class WP_CDN_Rewrite {
 	 * @return    void
      */
     public function include_admin_javascript() {
-        wp_enqueue_script('admin.js', plugins_url('html/admin.js', __FILE__), array('jquery'));
+        wp_enqueue_script( 'admin.js', plugins_url( 'html/admin.js', __FILE__ ), array( 'jquery' ) );
     }
 	
 	/**
@@ -199,11 +167,11 @@ class WP_CDN_Rewrite {
 	 * @return    void
      */
     public function show_config() {
-		if (!current_user_can(self::REQUIRED_CAPABILITY)) {
-			wp_die(__('You do not have sufficient permissions to access this page.'));
+		if ( ! current_user_can( self::REQUIRED_CAPABILITY ) ) {
+			wp_die( __( 'You do not have sufficient permissions to access this page.' ) );
 		}
 
-		require_once('html/config.php');
+		require_once( 'html/config.php' );
 	}
 	
 	/**
@@ -215,25 +183,25 @@ class WP_CDN_Rewrite {
 	 * @param     string  $content         The text to rewrite
 	 * @return    string  The new content with appropriate URLs rewritten
      */
-    public function rewrite_content($content) {
+    public function rewrite_content( $content ) {
     	// Grab the version number we're working with
-		$version = get_option(self::VERSION_KEY);
+		$version = get_option( self::VERSION_KEY );
 		
-		if (strcmp($version, '1.0') == 0) {
+		if ( strcmp( $version, '1.0' ) == 0 ) {
 			// Pull the rules and whitelist arrays from the database
-			$rules = get_option(self::RULES_KEY);
-			$whitelist = get_option(self::WHITELIST_KEY);
+			$rules = get_option( self::RULES_KEY );
+			$whitelist = get_option( self::WHITELIST_KEY );
 			
 			// Get a DOM object for this content that we can manipulate
 			$dom = new DOMDocument();
-			$dom->loadHTML($content);
+			$dom->loadHTML( $content );
 			$dom->formatOutput = true;
 			
 			// Rewrite URLs
-			$this->do_rewrite(&$dom, $rules, $whitelist, 'a', 'href');
-			$this->do_rewrite(&$dom, $rules, $whitelist, 'img', 'src');
-			$this->do_rewrite(&$dom, $rules, $whitelist, 'script', 'src');
-			$this->do_rewrite(&$dom, $rules, $whitelist, 'link', 'href');
+			$this->do_rewrite( &$dom, $rules, $whitelist, 'a', 'href' );
+			$this->do_rewrite( &$dom, $rules, $whitelist, 'img', 'src' );
+			$this->do_rewrite( &$dom, $rules, $whitelist, 'script', 'src' );
+			$this->do_rewrite( &$dom, $rules, $whitelist, 'link', 'href' );
 			
 			// Grab the modified HTML
 			$newContent = $dom->saveHTML();
@@ -253,9 +221,9 @@ class WP_CDN_Rewrite {
 	 * @return    void
      */
     public static function uninstall() {
-        delete_option(self::VERSION_KEY);
-        delete_option(self::RULES_KEY);
-        delete_option(self::WHITELIST_KEY);
+        delete_option( self::VERSION_KEY );
+        delete_option( self::RULES_KEY );
+        delete_option( self::WHITELIST_KEY );
     }
     
     /**
@@ -271,47 +239,47 @@ class WP_CDN_Rewrite {
 	 * @param     string       $attribute  The attribute to rewrite for on the specified tag
 	 * @return    void
      */
-    protected function do_rewrite($dom, $rules=array(), $whitelist=array(), $tag='a', $attribute='href') {
+    protected function do_rewrite( $dom, $rules = array(), $whitelist = array(), $tag = 'a', $attribute = 'href' ) {
     	// Make sure we got a valid DOM
-    	if (NULL == $dom) {
-    		wp_die('Invalid DOM passed to WP CDN Rewrite\'s do_rewrite()');
+    	if ( NULL == $dom ) {
+    		wp_die( "Invalid DOM passed to WP CDN Rewrite's do_rewrite()" );
     	}
     	
     	// Go through all of the tags of the type specified…
-    	$tags = $dom->getElementsByTagName($tag);
-		if (!is_null($tags)) {
-			foreach ($tags as $tag) {
+    	$tags = $dom->getElementsByTagName( $tag );
+		if ( ! is_null( $tags ) ) {
+			foreach ( $tags as $tag ) {
 				// …and look for ones that have the requested attribute
-				if ($tag->hasAttribute($attribute)) {
-					$url = $tag->getAttribute($attribute);
+				if ( $tag->hasAttribute( $attribute ) ) {
+					$url = $tag->getAttribute( $attribute );
 					
-					if ($this->startswith($url, '/')) {
+					if ( $this->starts_with( $url, '/' ) ) {
 						$base = network_site_url();
-						if (!$this->startswith($base, '/')) {
+						if ( ! $this->starts_with( $base, '/' ) ) {
 							$base = $base . '/';
 						}
 						$url = $base . $url;
 					}
-					$parsed = parse_url($url);
+					$parsed = parse_url( $url );
 					
-					if (FALSE !== $parsed) {
+					if ( FALSE !== $parsed ) {
 						$host = $parsed['host'];
-						if (in_array($host, $whitelist)) {
+						if ( in_array( $host, $whitelist ) ) {
 							// The target is on a whitelisted domain, so
 							// we want to rewrite the url
 							
 							$matchedRule = NULL;
-							foreach ($rules as $rule) {
+							foreach ( $rules as $rule ) {
 								$path = $parsed['path'];
 								
-								if ($this->endswith($path, $rule['match'])) {
+								if ( $this->ends_with( $path, $rule['match'] ) ) {
 									// Found a rule to rewrite for
 									$matchedRule = $rule;
 									break;
 								}
 							}
 							
-							$tag->setAttribute($attribute, $this->rewrite_url($url, $matchedRule));
+							$tag->setAttribute( $attribute, $this->rewrite_url( $url, $matchedRule ) );
 						}
 					}
 				}
@@ -329,48 +297,48 @@ class WP_CDN_Rewrite {
 	 * @param     array   $rule            Rewrite rule
 	 * @return    string  The rewritten URL
      */
-    protected function rewrite_url($url, $rule) {
-    	if (NULL == $rule) {
+    protected function rewrite_url( $url, $rule ) {
+    	if ( NULL == $rule ) {
     		return $url;
     	}
     	
     	$ret = $url;
     	
-		if (self::REWRITE_TYPE_HOST_ONLY == $rule['type']) {
-			$host = parse_url($ret, PHP_URL_HOST);
+		if ( self::REWRITE_TYPE_HOST_ONLY == $rule['type'] ) {
+			$host = parse_url( $ret, PHP_URL_HOST );
 			
 			// Set the scheme and host if we have an absolute path
-			if (FALSE === $host) {
+			if ( FALSE === $host ) {
 				$host = network_site_url();
 			}
 			
 			// Find the stuff to the left and right of the host
-			$oldHostLen = strlen($host);
-			$leftLen = strpos($ret, $host);
-			$rightLen = strlen($ret) - ($leftLen + $oldHostLen);
+			$oldHostLen = strlen( $host );
+			$leftLen = strpos( $ret, $host );
+			$rightLen = strlen( $ret ) - ( $leftLen + $oldHostLen );
 			
-			$left = substr($ret, 0, $leftLen);
-			$right = substr($ret, $leftLen + $oldHostLen);
+			$left = substr( $ret, 0, $leftLen );
+			$right = substr( $ret, $leftLen + $oldHostLen );
 			
 			// Build a new URL with our replacement host
 			$ret = $left . $rule['rule'] . $right;
 			
 		}
-		else if (self::REWRITE_TYPE_FULL_URL == $rule['type']) {
-			$filename = pathinfo(parse_url($ret, PHP_URL_PATH), PATHINFO_BASENAME);
+		else if ( self::REWRITE_TYPE_FULL_URL == $rule['type'] ) {
+			$filename = pathinfo( parse_url( $ret, PHP_URL_PATH ), PATHINFO_BASENAME );
 			$ret = $rule['rule'];
 			
 			// Make sure we have a / on the end
-			if (!$this->endswith($ret, '/')) {
+			if ( ! $this->ends_with( $ret, '/' ) ) {
 				$ret = $ret . '/';
 			}
 			
 			$ret = $ret . $filename;
 			
 			// Add in the scheme and host for an absolute path
-			if ($this->startswith($ret, '/')) {
+			if ( $this->starts_with( $ret, '/' ) ) {
 				$base = network_site_url();
-				if (!$this->endswith($base, '/')) {
+				if ( ! $this->ends_with( $base, '/' ) ) {
 					$base = $base . '/';
 				}
 				
@@ -391,44 +359,44 @@ class WP_CDN_Rewrite {
 	 * @param     array   $ruleArray       Array of rules
 	 * @return    array   Array of sanitized rules
      */
-    public function sanitize_rules(array $ruleArray) {
+    public function sanitize_rules( array $ruleArray ) {
         $allowedTypes = array(
             self::REWRITE_TYPE_FULL_URL,
             self::REWRITE_TYPE_HOST_ONLY,
         );
 
-        foreach ($ruleArray as $key => $rule) {
-            if (!in_array($rule['type'], $allowedTypes)) {
-                unset($ruleArray[$key]);
-                add_settings_error(self::RULES_KEY, self::RULES_KEY, "Invalid rule type entered");
+        foreach ( $ruleArray as $key => $rule ) {
+            if ( ! in_array( $rule['type'], $allowedTypes ) ) {
+                unset( $ruleArray[$key] );
+                add_settings_error( self::RULES_KEY, self::RULES_KEY, 'Invalid rule type entered' );
                 continue;
             }
 
-            $rule['match'] = preg_replace('/\W/', '', $rule['match']);
-            if (trim($rule['match']) == '') {
-                unset($ruleArray[$key]);
+            $rule['match'] = preg_replace( '/\W/', '', $rule['match'] );
+            if ( trim( $rule['match'] ) == '' ) {
+                unset( $ruleArray[$key] );
                 continue;
             }
 
             $validRule = true;
-            if ($rule['type'] == self::REWRITE_TYPE_FULL_URL) {
-                $rule['rule'] = filter_var($rule['rule'], FILTER_SANITIZE_URL);
-                $validRule = filter_var($rule['rule'], FILTER_VALIDATE_URL);
-            } elseif ($rule['type'] == self::REWRITE_TYPE_HOST_ONLY) {
-                $rule['rule'] = preg_replace("/[http|https]:\/\//", "", $rule['rule']);
-                $validRule = self::validateDomainName($rule['rule']);
+            if ( $rule['type'] == self::REWRITE_TYPE_FULL_URL ) {
+                $rule['rule'] = filter_var( $rule['rule'], FILTER_SANITIZE_URL );
+                $validRule = filter_var( $rule['rule'], FILTER_VALIDATE_URL );
+            } elseif ( $rule['type'] == self::REWRITE_TYPE_HOST_ONLY ) {
+                $rule['rule'] = preg_replace( '/[http|https]:\/\//', '', $rule['rule'] );
+                $validRule = self::validate_domain_name( $rule['rule'] );
             }
 
-            if (!$validRule) {
-                unset($ruleArray[$key]);
-                add_settings_error(self::RULES_KEY, self::RULES_KEY, "Invalid rewrite URL entered");
+            if ( ! $validRule ) {
+                unset( $ruleArray[$key] );
+                add_settings_error( self::RULES_KEY, self::RULES_KEY, 'Invalid rewrite URL entered' );
             } else {
                 $ruleArray[$key] = $rule;
             }
         }
 
         // Make sure all the indexes are contiguous
-        $ruleArray = array_values($ruleArray);
+        $ruleArray = array_values( $ruleArray );
         return $ruleArray;
     }
 
@@ -441,19 +409,19 @@ class WP_CDN_Rewrite {
 	 * @param     array   $valueArray      Array of whitelist rules
 	 * @return    array   Array of sanitized whitelist rules
      */
-    public function sanitize_whitelist(array $valueArray) {
-        foreach($valueArray as $key => $value) {
-            $value = trim($value);
+    public function sanitize_whitelist( array $valueArray ) {
+        foreach ( $valueArray as $key => $value ) {
+            $value = trim( $value );
 
-            if ($value == '') {
-                unset($valueArray[$key]);
+            if ( $value == '' ) {
+                unset( $valueArray[$key] );
             } else {
                 // Strip http, https, and ://
-                $value = preg_replace("/[http|https]:\/\//", "", $value);
+                $value = preg_replace( '/[http|https]:\/\//', '', $value );
 
-                $validDomain = self::validateDomainName($value);
-                if (false == $validDomain) {
-                    add_settings_error(self::WHITELIST_KEY, self::WHITELIST_KEY, "Invalid domain name \"{$value}\" entered");
+                $validDomain = self::validate_domain_name( $value );
+                if ( false == $validDomain ) {
+                    add_settings_error( self::WHITELIST_KEY, self::WHITELIST_KEY, 'Invalid domain name "{$value}" entered' );
                 } else {
                     $valueArray[$key] = $value;
                 }
@@ -461,7 +429,7 @@ class WP_CDN_Rewrite {
         }
 
         // Make sure all the indexes are contiguous
-        $valueArray = array_values($valueArray);
+        $valueArray = array_values( $valueArray );
         return $valueArray;
     }
 
@@ -475,9 +443,9 @@ class WP_CDN_Rewrite {
 	 * @param     string  $needle          The string to search for
 	 * @return    bool    True if the text starts with a given string, else false
 	 */
-	protected function startswith($haystack, $needle) {
-    	$needleLen = strlen($needle);
-    	return substr($haystack, 0, $needleLen) === $needle;
+	protected function starts_with( $haystack, $needle ) {
+    	$needleLen = strlen( $needle );
+    	return substr( $haystack, 0, $needleLen ) === $needle;
     }
     
     /**
@@ -492,8 +460,8 @@ class WP_CDN_Rewrite {
 	 * @param     string  $needle          The string to look for
 	 * @return    bool    True if the text ends with a given string, else false
 	 */
-	protected function endswith($haystack, $needle){
-	    return strrpos($haystack, $needle) === strlen($haystack) - strlen($needle);
+	protected function ends_with( $haystack, $needle ){
+	    return strrpos( $haystack, $needle ) === strlen( $haystack ) - strlen( $needle );
 	}
 
 
@@ -506,10 +474,10 @@ class WP_CDN_Rewrite {
 	 * @param     string  $domainName      The domain name to validate
 	 * @return    bool    True if the domain name is valid, else false
      */
-    protected function validateDomainName($domainName) {
-        $pieces = explode(".", $domainName);
-        foreach ($pieces as $piece) {
-            if (!preg_match('/^[a-z\d][a-z\d-]{0,62}$/i', $piece) || preg_match('/-$/', $piece)) {
+    protected function validate_domain_name( $domainName ) {
+        $pieces = explode( '.', $domainName );
+        foreach ( $pieces as $piece ) {
+            if ( ! preg_match( '/^[a-z\d][a-z\d-]{0,62}$/i', $piece ) || preg_match( '/-$/', $piece ) ) {
                 return false;
             }
         }
