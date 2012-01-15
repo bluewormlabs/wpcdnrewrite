@@ -198,10 +198,10 @@ class WP_CDN_Rewrite {
 			$dom->formatOutput = true;
 			
 			// Rewrite URLs
-			$this->do_rewrite( &$dom, $rules, $whitelist, 'a', 'href' );
-			$this->do_rewrite( &$dom, $rules, $whitelist, 'img', 'src' );
-			$this->do_rewrite( &$dom, $rules, $whitelist, 'script', 'src' );
-			$this->do_rewrite( &$dom, $rules, $whitelist, 'link', 'href' );
+			$this->do_rewrite( $dom, $rules, $whitelist, 'a', 'href' );
+			$this->do_rewrite( $dom, $rules, $whitelist, 'img', 'src' );
+			$this->do_rewrite( $dom, $rules, $whitelist, 'script', 'src' );
+			$this->do_rewrite( $dom, $rules, $whitelist, 'link', 'href' );
 			
 			// Grab the modified HTML
 			$newContent = $dom->saveHTML();
