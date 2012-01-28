@@ -4,7 +4,7 @@ Donate link: http://bluewormlabs.com/projects.php
 Tags: cdn
 Requires at least: 2.8
 Tested up to: 3.2.1
-Stable tag: trunk
+Stable tag: 1.0
 License: [zlib/libpng license][http://opensource.org/licenses/zlib-license]
 
 WP CDN Rewrite is a simple plugin that rewrites URLs, generally to static assets, automatically based on a set of rules.
