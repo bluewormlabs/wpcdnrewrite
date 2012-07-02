@@ -23,7 +23,7 @@ class WP_CDN_Rewrite {
 	/**
 	 * Version of the plugin
 	 */
-    const VERSION = '1.0';
+    const VERSION = '1.1';
     
     /**
      * wp_options key for the plugin version
@@ -67,7 +67,6 @@ class WP_CDN_Rewrite {
             add_action( 'admin_enqueue_scripts', array( $this, 'include_admin_javascript' ) );
         }
 
-        register_activation_hook( __FILE__, array( $this, 'activate' ) );
         register_uninstall_hook( __FILE__, array( 'WP_CDN_Rewrite', 'uninstall' ) );
         
         // Add filters to run our rewrite code on
@@ -485,4 +484,7 @@ class WP_CDN_Rewrite {
     }
 }
 
+//this is technically the activation hook but WP 3.3.1 doesn't run those anymore apparently...
+// so this is kind of a hack
+add_action('wp_loaded', array('WP_CDN_Rewrite', 'activate'));
 new WP_CDN_Rewrite();
