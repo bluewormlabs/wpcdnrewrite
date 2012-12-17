@@ -186,7 +186,7 @@ class WP_CDN_Rewrite {
     	// Grab the version number we're working with
 		$version = get_option( self::VERSION_KEY );
 		
-		if ( strcmp( $version, '1.0' ) == 0 ) {
+		if ($version == '1.1' || $version == '1.0') {
 			// Pull the rules and whitelist arrays from the database
 			$rules = get_option( self::RULES_KEY );
 			$whitelist = get_option( self::WHITELIST_KEY );
