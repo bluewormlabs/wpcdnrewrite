@@ -49,6 +49,26 @@ class WP_CDN_Rewrite {
 	 * Constant to signify that a rule is for the full URL up to the file
 	 */
 	const REWRITE_TYPE_FULL_URL = 2;
+
+
+	/**
+	 * Used to determine if the content-type is xml
+	 */
+	const CONTENT_TYPE_XML = 'xml';
+
+
+	/**
+	 * Used to determine if the content-type is html
+	 */
+	const CONTENT_TYPE_HTML = 'html';
+
+
+	/**
+	 * Stores the type of content we're rewriting
+	 *
+	 * @var String
+	 */
+	protected $content_type;
 	
 
 	/**
@@ -145,6 +165,19 @@ class WP_CDN_Rewrite {
         add_option( self::WHITELIST_KEY, array( $host ) );
     }
 
+
+	/**
+	 * @param String $content
+	 */
+	public function get_content_type($content) {
+		if(preg_match("/^<\?xml/", $content)) {
+			return static::CONTENT_TYPE_XML;
+		}
+
+		return static::CONTENT_TYPE_HTML;
+	}
+
+
     /**
      * Adds admin.js to the <head>
 	 *
@@ -172,7 +205,42 @@ class WP_CDN_Rewrite {
 
 		require_once( 'html/config.php' );
 	}
-	
+
+
+	/**
+	 * Loads the content into a DomDocument object
+	 *
+	 * @param String $content
+	 * @return DOMDocument
+	 */
+	public function load_content($content) {
+		$dom = new DOMDocument();
+
+		if(static::CONTENT_TYPE_XML == $this->content_type) {
+			$dom->loadXML($content);
+		} else {
+			$dom->loadHTML($content);
+		}
+
+		return $dom;
+	}
+
+
+	/**
+	 * Make sure we save our content in the right format from DOMDocument
+	 *
+	 * @param DOMDocument $domDocument
+	 * @return string
+	 */
+	public function save_content(DOMDocument $domDocument) {
+		if(static::CONTENT_TYPE_XML == $this->content_type) {
+			return $domDocument->saveXML();
+		}
+
+		return $domDocument->saveHTML();
+	}
+
+
 	/**
      * Rewrites the specified content per specified rules
 	 *
@@ -185,15 +253,16 @@ class WP_CDN_Rewrite {
     public function rewrite_content( $content ) {
     	// Grab the version number we're working with
 		$version = get_option( self::VERSION_KEY );
-		
-		if ($version == '1.1' || $version == '1.0') {
+		$this->content_type = $this->get_content_type($content);
+
+		if ($version <= '1.2') {
 			// Pull the rules and whitelist arrays from the database
 			$rules = get_option( self::RULES_KEY );
 			$whitelist = get_option( self::WHITELIST_KEY );
 			
 			// Get a DOM object for this content that we can manipulate
-			$dom = new DOMDocument();
-			$dom->loadHTML( $content );
+			$dom = $this->load_content($content);
+
 			$dom->formatOutput = true;
 			
 			// Rewrite URLs
@@ -203,7 +272,7 @@ class WP_CDN_Rewrite {
 			$this->do_rewrite( $dom, $rules, $whitelist, 'link', 'href' );
 			
 			// Grab the modified HTML
-			$newContent = $dom->saveHTML();
+			$newContent = $this->save_content($dom);
 			
 			return $newContent;
 		}
@@ -246,6 +315,7 @@ class WP_CDN_Rewrite {
     	
     	// Go through all of the tags of the type specified…
     	$tags = $dom->getElementsByTagName( $tag );
+
 		if ( ! is_null( $tags ) ) {
 			foreach ( $tags as $tag ) {
 				// …and look for ones that have the requested attribute
