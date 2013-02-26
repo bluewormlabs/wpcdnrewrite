@@ -219,7 +219,9 @@ class WP_CDN_Rewrite {
 		if(self::CONTENT_TYPE_XML == $this->content_type) {
 			$dom->loadXML($content);
 		} else {
+			libxml_use_internal_errors(true);
 			$dom->loadHTML('<?xml encoding="UTF-8">' . $content);
+			libxml_clear_errors();
 			foreach ($dom->childNodes as $item) {
 				if ($item->nodeType == XML_PI_NODE) {
 					$dom->removeChild($item);
