@@ -9,42 +9,42 @@ class WP_CDN_Rewrite {
 	 * The name of the plugin
 	 */
 	const NAME = 'CDN Rewrite';
-	
+
 	/**
 	 * The slug to use for plugin URLs
 	 */
 	const SLUG = 'wpcdnrewrite';
-	
+
 	/**
 	 * Required user capability
 	 */
 	const REQUIRED_CAPABILITY = 'manage_options';
-	
+
 	/**
 	 * Version of the plugin
 	 */
     const VERSION = '1.1';
-    
+
     /**
      * wp_options key for the plugin version
      */
 	const VERSION_KEY = 'wpcdnrewrite-version';
-	
+
 	/**
 	 * wp_options key for rules
 	 */
 	const RULES_KEY = 'wpcdnrewrite-rules';
-	
+
 	/**
 	 * wp_options key for domains to rewrite URLs for
 	 */
 	const WHITELIST_KEY = 'wpcdnrewrite-whitelist';
-	
+
 	/**
 	 * Constant to signify that a rule is only for the host portion of the url
 	 */
 	const REWRITE_TYPE_HOST_ONLY = 1;
-	
+
 	/**
 	 * Constant to signify that a rule is for the full URL up to the file
 	 */
@@ -69,14 +69,14 @@ class WP_CDN_Rewrite {
 	 * @var String
 	 */
 	protected $content_type;
-	
+
 
 	/**
 	 * Creates a new WP_CDN_Rewrite object
 	 *
 	 * @package WP CDN Rewrite
 	 * @since 1.0
-	 * 
+	 *
 	 * @return    object  A new WP_CDN_Rewrite object
 	 */
 	public function __construct() {
@@ -88,7 +88,7 @@ class WP_CDN_Rewrite {
         }
 
         register_uninstall_hook( __FILE__, array( 'WP_CDN_Rewrite', 'uninstall' ) );
-        
+
         // Add filters to run our rewrite code on
         if ( function_exists( 'is_multisite' ) && is_multisite() ) {
         	add_filter( 'muplugins_loaded', array( $this, 'startup' ), 5 );
@@ -97,13 +97,13 @@ class WP_CDN_Rewrite {
         }
         add_filter( 'shutdown', array( $this, 'shutdown' ), 20 );
 	}
-	
+
 	/**
 	 * Filter to start buffering at the start of WordPress' work
 	 *
 	 * @package WP CDN Rewrite
 	 * @since 1.0
-	 * 
+	 *
 	 * @return    void
 	 */
 	public function startup() {
@@ -111,13 +111,13 @@ class WP_CDN_Rewrite {
 			$ret = ob_start( 'wpcdn_rewrite_content' );
 		}
 	}
-	
+
 	/**
 	 * Filter to end buffering/flush any remaining buffer at the end of WordPress' work
 	 *
 	 * @package WP CDN Rewrite
 	 * @since 1.0
-	 * 
+	 *
 	 * @return void
 	 */
 	public function shutdown() {
@@ -132,20 +132,20 @@ class WP_CDN_Rewrite {
 	 *
 	 * @package WP CDN Rewrite
 	 * @since 1.0
-	 * 
+	 *
 	 * @return    void
      */
     public function admin_init() {
         register_setting( 'wpcdnrewrite', self::RULES_KEY, array( $this, 'sanitize_rules' ) );
         register_setting( 'wpcdnrewrite', self::WHITELIST_KEY, array( $this, 'sanitize_whitelist' ) );
     }
-	
+
 	/**
      * Adds a link to our settings page under the Settings menu
 	 *
 	 * @package WP CDN Rewrite
 	 * @since 1.0
-	 * 
+	 *
 	 * @return    void
      */
     public function admin_menu() {
@@ -171,10 +171,10 @@ class WP_CDN_Rewrite {
 	 */
 	public function get_content_type($content) {
 		if(preg_match("/^<\?xml/", $content)) {
-			return static::CONTENT_TYPE_XML;
+			return self::CONTENT_TYPE_XML;
 		}
 
-		return static::CONTENT_TYPE_HTML;
+		return self::CONTENT_TYPE_HTML;
 	}
 
 
@@ -183,19 +183,19 @@ class WP_CDN_Rewrite {
 	 *
 	 * @package WP CDN Rewrite
 	 * @since 1.0
-	 * 
+	 *
 	 * @return    void
      */
     public function include_admin_javascript() {
         wp_enqueue_script( 'admin.js', plugins_url( 'html/admin.js', __FILE__ ), array( 'jquery' ) );
     }
-	
+
 	/**
      * Shows the configuration page within the settings
 	 *
 	 * @package WP CDN Rewrite
 	 * @since 1.0
-	 * 
+	 *
 	 * @return    void
      */
     public function show_config() {
@@ -216,10 +216,18 @@ class WP_CDN_Rewrite {
 	public function load_content($content) {
 		$dom = new DOMDocument();
 
-		if(static::CONTENT_TYPE_XML == $this->content_type) {
+		if(self::CONTENT_TYPE_XML == $this->content_type) {
 			$dom->loadXML($content);
 		} else {
-			$dom->loadHTML($content);
+			libxml_use_internal_errors(true);
+			$dom->loadHTML('<?xml encoding="UTF-8">' . $content);
+			libxml_clear_errors();
+			foreach ($dom->childNodes as $item) {
+				if ($item->nodeType == XML_PI_NODE) {
+					$dom->removeChild($item);
+				}
+			}
+			$dom->encoding = 'UTF-8';
 		}
 
 		return $dom;
@@ -233,7 +241,7 @@ class WP_CDN_Rewrite {
 	 * @return string
 	 */
 	public function save_content(DOMDocument $domDocument) {
-		if(static::CONTENT_TYPE_XML == $this->content_type) {
+		if(self::CONTENT_TYPE_XML == $this->content_type) {
 			return $domDocument->saveXML();
 		}
 
@@ -246,7 +254,7 @@ class WP_CDN_Rewrite {
 	 *
 	 * @package WP CDN Rewrite
 	 * @since 1.0
-	 * 
+	 *
 	 * @param     string  $content         The text to rewrite
 	 * @return    string  The new content with appropriate URLs rewritten
      */
@@ -259,33 +267,33 @@ class WP_CDN_Rewrite {
 			// Pull the rules and whitelist arrays from the database
 			$rules = get_option( self::RULES_KEY );
 			$whitelist = get_option( self::WHITELIST_KEY );
-			
+
 			// Get a DOM object for this content that we can manipulate
 			$dom = $this->load_content($content);
 
 			$dom->formatOutput = true;
-			
+
 			// Rewrite URLs
 			$this->do_rewrite( $dom, $rules, $whitelist, 'a', 'href' );
 			$this->do_rewrite( $dom, $rules, $whitelist, 'img', 'src' );
 			$this->do_rewrite( $dom, $rules, $whitelist, 'script', 'src' );
 			$this->do_rewrite( $dom, $rules, $whitelist, 'link', 'href' );
-			
+
 			// Grab the modified HTML
 			$newContent = $this->save_content($dom);
-			
+
 			return $newContent;
 		}
-		
+
 		return $content;
 	}
 
     /**
      * Deletes all of the stuff we put into the database so that we don't leave anything behind to corrupt future installs
-     * 
+     *
 	 * @package WP CDN Rewrite
 	 * @since 1.0
-	 * 
+	 *
 	 * @return    void
      */
     public static function uninstall() {
@@ -293,13 +301,13 @@ class WP_CDN_Rewrite {
         delete_option( self::RULES_KEY );
         delete_option( self::WHITELIST_KEY );
     }
-    
+
     /**
      * Does the actual URL rewriting for a given DOMDocument object
 	 *
 	 * @package WP CDN Rewrite
 	 * @since 1.0
-	 * 
+	 *
 	 * @param     DOMDocument  $dom        The DOM to rewrite URLs in
 	 * @param     array        $rules      Rewrite rules
 	 * @param     array        $whiteList  Array of server names to rewrite links for
@@ -312,7 +320,7 @@ class WP_CDN_Rewrite {
     	if ( NULL == $dom ) {
     		wp_die( "Invalid DOM passed to WP CDN Rewrite's do_rewrite()" );
     	}
-    	
+
     	// Go through all of the tags of the type specified…
     	$tags = $dom->getElementsByTagName( $tag );
 
@@ -321,7 +329,7 @@ class WP_CDN_Rewrite {
 				// …and look for ones that have the requested attribute
 				if ( $tag->hasAttribute( $attribute ) ) {
 					$url = $tag->getAttribute( $attribute );
-					
+
 					if ( $this->starts_with( $url, '/' ) ) {
 						$base = network_site_url();
 						if ( ! $this->starts_with( $base, '/' ) ) {
@@ -330,24 +338,24 @@ class WP_CDN_Rewrite {
 						$url = $base . $url;
 					}
 					$parsed = parse_url( $url );
-					
+
 					if ( FALSE !== $parsed ) {
 						$host = $parsed['host'];
 						if ( in_array( $host, $whitelist ) ) {
 							// The target is on a whitelisted domain, so
 							// we want to rewrite the url
-							
+
 							$matchedRule = NULL;
 							foreach ( $rules as $rule ) {
 								$path = $parsed['path'];
-								
+
 								if ( $this->ends_with( $path, $rule['match'] ) ) {
 									// Found a rule to rewrite for
 									$matchedRule = $rule;
 									break;
 								}
 							}
-							
+
 							$tag->setAttribute( $attribute, $this->rewrite_url( $url, $matchedRule ) );
 						}
 					}
@@ -355,13 +363,13 @@ class WP_CDN_Rewrite {
 			}
 		}
     }
-    
+
     /**
      * Rewrites one URL per the specified rule
-     * 
+     *
 	 * @package WP CDN Rewrite
 	 * @since 1.0
-	 * 
+	 *
 	 * @param     string  $url             The URL
 	 * @param     array   $rule            Rewrite rule
 	 * @return    string  The rewritten URL
@@ -370,51 +378,51 @@ class WP_CDN_Rewrite {
     	if ( NULL == $rule ) {
     		return $url;
     	}
-    	
+
     	$ret = $url;
-    	
+
 		if ( self::REWRITE_TYPE_HOST_ONLY == $rule['type'] ) {
 			$host = parse_url( $ret, PHP_URL_HOST );
-			
+
 			// Set the scheme and host if we have an absolute path
 			if ( FALSE === $host ) {
 				$host = network_site_url();
 			}
-			
+
 			// Find the stuff to the left and right of the host
 			$oldHostLen = strlen( $host );
 			$leftLen = strpos( $ret, $host );
 			$rightLen = strlen( $ret ) - ( $leftLen + $oldHostLen );
-			
+
 			$left = substr( $ret, 0, $leftLen );
 			$right = substr( $ret, $leftLen + $oldHostLen );
-			
+
 			// Build a new URL with our replacement host
 			$ret = $left . $rule['rule'] . $right;
-			
+
 		}
 		else if ( self::REWRITE_TYPE_FULL_URL == $rule['type'] ) {
 			$filename = pathinfo( parse_url( $ret, PHP_URL_PATH ), PATHINFO_BASENAME );
 			$ret = $rule['rule'];
-			
+
 			// Make sure we have a / on the end
 			if ( ! $this->ends_with( $ret, '/' ) ) {
 				$ret = $ret . '/';
 			}
-			
+
 			$ret = $ret . $filename;
-			
+
 			// Add in the scheme and host for an absolute path
 			if ( $this->starts_with( $ret, '/' ) ) {
 				$base = network_site_url();
 				if ( ! $this->ends_with( $base, '/' ) ) {
 					$base = $base . '/';
 				}
-				
+
 				$ret = $base . $ret;
 			}
 		}
-		
+
 		return $ret;
     }
 
@@ -424,7 +432,7 @@ class WP_CDN_Rewrite {
 	 *
 	 * @package WP CDN Rewrite
 	 * @since 1.0
-	 * 
+	 *
 	 * @param     array   $ruleArray       Array of rules
 	 * @return    array   Array of sanitized rules
      */
@@ -471,10 +479,10 @@ class WP_CDN_Rewrite {
 
     /**
      * Sanitize the array of domains
-     * 
+     *
 	 * @package WP CDN Rewrite
 	 * @since 1.0
-	 * 
+	 *
 	 * @param     array   $valueArray      Array of whitelist rules
 	 * @return    array   Array of sanitized whitelist rules
      */
@@ -507,7 +515,7 @@ class WP_CDN_Rewrite {
 	 *
 	 * @package WP CDN Rewrite
 	 * @since 1.0
-	 * 
+	 *
 	 * @param     string  $haystack        The text to search
 	 * @param     string  $needle          The string to search for
 	 * @return    bool    True if the text starts with a given string, else false
@@ -516,14 +524,14 @@ class WP_CDN_Rewrite {
     	$needleLen = strlen( $needle );
     	return substr( $haystack, 0, $needleLen ) === $needle;
     }
-    
+
     /**
 	 * Tests whether a text ends with the given string or not
 	 *
 	 * @package WP CDN Rewrite
 	 * @since 1.0
 	 * @source  http://www.jonasjohn.de/snippets/php/ends-with.htm
-	 * 
+	 *
 	 * @param     int     $count           The rule number
 	 * @param     string  $haystack        The text to search
 	 * @param     string  $needle          The string to look for
@@ -539,7 +547,7 @@ class WP_CDN_Rewrite {
 	 *
 	 * @package WP CDN Rewrite
 	 * @since 1.0
-	 * 
+	 *
 	 * @param     string  $domainName      The domain name to validate
 	 * @return    bool    True if the domain name is valid, else false
      */
