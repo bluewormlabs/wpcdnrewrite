@@ -324,9 +324,6 @@ class WP_CDN_Rewrite {
 					
 					if ( $this->starts_with( $url, '/' ) ) {
 						$base = network_site_url();
-						if ( ! $this->starts_with( $base, '/' ) ) {
-							$base = $base . '/';
-						}
 						$url = $base . $url;
 					}
 					$parsed = parse_url( $url );
@@ -348,7 +345,8 @@ class WP_CDN_Rewrite {
 								}
 							}
 							
-							$tag->setAttribute( $attribute, $this->rewrite_url( $url, $matchedRule ) );
+							if ( NULL != $matchedRule )
+								$tag->setAttribute( $attribute, $this->rewrite_url( $url, $matchedRule ) );
 						}
 					}
 				}
@@ -367,10 +365,6 @@ class WP_CDN_Rewrite {
 	 * @return    string  The rewritten URL
      */
     protected function rewrite_url( $url, $rule ) {
-    	if ( NULL == $rule ) {
-    		return $url;
-    	}
-    	
     	$ret = $url;
     	
 		if ( self::REWRITE_TYPE_HOST_ONLY == $rule['type'] ) {
