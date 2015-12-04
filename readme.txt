@@ -1,5 +1,5 @@
 === WordPress CDN Rewrite ===
-Contributors: bluewormlabs
+Contributors: bluewormlabs, sgladysz
 Donate link: http://bluewormlabs.com/projects.php
 Tags: cdn
 Requires at least: 2.8
@@ -19,7 +19,7 @@ The following are rewritten if a rule matches:
 
 1. Values in `href` attributes of A tags
 2. Values in `href` attributes of LINK tags
-3. Values in `src` attributes of IMG tags
+3. Values in `src`, `srcset` attributes of IMG tags
 4. Values in `src` attributes of SCRIPT tags
 
 == Installation ==
@@ -28,23 +28,23 @@ The following are rewritten if a rule matches:
 1. Activate the plugin through the 'Plugins' menu in WordPress
 
 == Configuration ==
-The plugin creates a new section in the Settings area of the 
-WordPress admin site titled 'WP CDN Rewrite'. All configuration is 
+The plugin creates a new section in the Settings area of the
+WordPress admin site titled 'WP CDN Rewrite'. All configuration is
 performed there.
 
-First, add domains to the whitelist. URLs on these domains will be 
+First, add domains to the whitelist. URLs on these domains will be
 rewritten if a rule is found for the given URL.
 
 Second, add rules. Two types of rules can be specified:
 
 1.  Host rewrite
-    
-    These rules only change the host on a given URL. For cases along 
-    the lines of the CloudFiles use case that we wrote this for, simply 
+
+    These rules only change the host on a given URL. For cases along
+    the lines of the CloudFiles use case that we wrote this for, simply
     specify the new host and the extension to match on (e.g., `jpg`).
 2.  Full rewrite
-    
-    These rewrite everything except the filename in the URL. Specify 
+
+    These rewrite everything except the filename in the URL. Specify
     whatever should prefix the filename (e.g., `http://images.example.com/`).
 
 == Frequently Asked Questions ==
